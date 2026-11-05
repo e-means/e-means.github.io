@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>The e-means playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<style>
+html{scrollbar-gutter:stable; -webkit-text-size-adjust:100%; text-size-adjust:100%;}
+.em-header{border-bottom:1px solid #e2e4e8; background:#fbfbfa; line-height:1.5;}
+.em-header-inner{max-width:1400px; margin:0 auto; padding:10px 32px; display:grid;
+    grid-template-columns:1fr auto 1fr; align-items:center; gap:12px 36px;}
+.em-left{justify-self:start; display:flex; align-items:baseline; flex-wrap:wrap; gap:8px 28px;}
+.em-name{font-family:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif; font-weight:600; font-size:17px;
+  color:#1b1f23; text-decoration:none;}
+.em-nav{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-size:13px; display:flex; gap:20px;}
+.em-nav a{color:#616b74; text-decoration:none; padding-bottom:2px; border-bottom:1px solid transparent;}
+.em-nav a:hover, .em-nav a.active{color:#1b1f23; border-bottom-color:#1d3557;}
+.em-paper{position:relative; display:inline-block;}
+.em-paper summary{list-style:none; cursor:pointer; color:#616b74; padding-bottom:2px;
+  border-bottom:1px solid transparent;}
+.em-paper summary::-webkit-details-marker{display:none;}
+.em-paper summary:hover, .em-paper[open] summary{color:#1b1f23; border-bottom-color:#1d3557;}
+.em-paper-pop{position:absolute; left:0; top:calc(100% + 10px); z-index:20; width:min(680px, 92vw);
+  background:#fff; border:1px solid #e2e4e8; border-radius:8px; padding:14px 16px;
+  box-shadow:0 6px 24px rgba(0,0,0,0.08); font-family:"IBM Plex Sans",-apple-system,sans-serif;}
+.em-paper-arxiv{font-size:13px; color:#616b74; margin-bottom:10px;}
+.em-cite{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-size:12px;
+  background:#f6f6f7; border:1px solid #e2e4e8; border-radius:6px; padding:10px 12px; margin:0 0 10px;
+  white-space:pre; overflow-x:auto; color:#1b1f23;}
+.em-copy{font-size:12px; padding:5px 12px;}
+.em-mark{justify-self:center; display:block; line-height:0; background:#fff;
+  border:none; transition:box-shadow 0.15s;}
+.em-mark:hover{box-shadow:0 2px 10px rgba(0,0,0,0.12);}
+.em-mark img{display:block; height:66px; width:auto;}
+.em-mark{position:relative; cursor:zoom-in;}
+.em-mark::after{content:"Click to zoom"; position:absolute; left:50%; top:calc(100% + 6px); transform:translateX(-50%); font:12px/1.4 "IBM Plex Sans",-apple-system,sans-serif; color:#fff; background:rgba(27,31,35,0.88); padding:3px 9px; border-radius:4px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.15s; z-index:30;}
+.em-mark:hover::after{opacity:1;}
+.em-mark:focus-visible::after{opacity:1;}
+.em-zoom{position:fixed; top:0; right:0; bottom:0; left:0; z-index:1000; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; margin:0; padding:24px; background:rgba(251,251,250,0.97); cursor:zoom-out;}
+.em-zoom.open{display:flex;}
+.em-zoom img{max-width:min(1600px, 94vw); max-height:78vh; width:auto; height:auto; background:#fff; border:none; box-shadow:0 6px 30px rgba(0,0,0,0.12);}
+.em-zoom figcaption{font-size:1.05em; color:#55555a;}
+@media (max-width:1180px){
+  .em-header-inner{grid-template-columns:1fr auto;}
+  .em-mark{grid-column:1 / -1; grid-row:1;}
+}
+.em-logos{justify-self:end; display:flex; align-items:center; gap:22px;}
+.em-logos > span{line-height:0; border:none; text-decoration:none;}
+.em-logos img{display:block; width:auto;}
+.em-logos .logo-fair{height:16px;}
+.em-logos .logo-enpc{height:50px;}
+.em-logos > span + span{padding-left:22px; border-left:1px solid #e2e4e8;}
+</style>
+<style>
+:root{
+  --ink:#111111; --ink-2:#55555a; --rule:#e5e5e8; --bg:#ffffff;
+  --emablue:#1f77b4; --emared:#d62728;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  line-height:1.5; font-size:16px;}
+.wide{max-width:1140px; margin:0 auto; padding:14px 24px 80px;}
+h1{font-size:1.7em; margin:8px 0 6px;}
+p.lede{color:var(--ink-2); max-width:760px;}
+h2{font-size:1.1em; margin:1.6em 0 0.5em;}
+fieldset{border:1px solid var(--rule); border-radius:8px; padding:4px 16px 6px; margin:0 0 10px;}
+fieldset .row{margin:2px 0;}
+fieldset label{margin-top:1px; margin-bottom:1px;}
+/* narrower parameter sliders so e-means epochs, Lloyd epochs and k fit on one line */
+#paramKlog{width:112px;}
+/* replay speed: not a run setting, so it looks different (grey, after a divider) */
+.speedslider{display:inline-flex; align-items:center; gap:8px; padding-left:12px; border-left:1px solid var(--rule);}
+/* the Parameters row is one line on desktop: slightly tighter gaps there */
+@media (min-width:601px){fieldset:nth-of-type(2) .row{column-gap:12px;}}
+#playSpeed{width:62px; accent-color:#8a8a90;}
+.speedval{min-width:2.4em; color:var(--ink-2); font-variant-numeric:tabular-nums;}
+@media (max-width:600px){.speedslider{display:grid; padding-left:0; border-left:0;} #playSpeed{width:100%;}}
+#paramKval{min-width:3.5em;}
+legend{font-weight:700; font-size:0.9em; padding:0 6px;}
+label{display:inline-block; font-size:0.88em; color:var(--ink-2); margin:4px 10px 4px 0;}
+input[type=number], select{font-size:0.95em; padding:3px 6px; width:90px;}
+select{width:auto;}
+textarea{width:100%; height:110px; font-family:"SF Mono","Menlo","Consolas",monospace; font-size:0.85em;}
+.row{display:flex; flex-wrap:wrap; gap:4px 18px; align-items:center; margin:6px 0;}
+.logslider{display:inline-flex; align-items:center; gap:8px;}
+.logslider input[type=range]{width:200px;}
+.logval{display:inline-block; min-width:5.5em; font-variant-numeric:tabular-nums; font-weight:600;}
+button{font-size:0.95em; padding:8px 18px; border-radius:6px; border:1px solid var(--emablue);
+  background:var(--emablue); color:#fff; cursor:pointer;}
+button:hover{opacity:0.9}
+button.secondary{background:#fff; color:var(--emablue);}
+button:disabled{opacity:0.4; cursor:default;}
+.anim-row{display:flex; flex-direction:column; margin-top:8px;
+  border:1px solid var(--rule); border-radius:10px; padding:10px 20px 14px; background:#fcfcfd;}
+/* below ~1100 px the chart moves to a second line instead of being cut off on the right */
+.anim-panels{display:flex; gap:24px; flex-wrap:wrap; justify-content:center; justify-content:safe center; overflow-x:auto;}
+.anim-row.stale .anim-panels{opacity:0.45;}
+.anim-row canvas{border-radius:4px; max-width:100%; height:auto;}
+.panel-title{font-weight:700; font-size:0.9em; min-height:1.3em; margin-bottom:6px; width:320px;
+  display:flex; align-items:flex-end; line-height:1.3;}
+.panel-title.lloyd{color:var(--emared)}
+.panel-title.ema{color:var(--emablue)}
+.readout{font-size:0.88em; color:var(--ink-2); margin-top:6px; min-height:3em; max-width:320px;}
+.chart-legend{display:flex; gap:16px; justify-content:center; margin-top:8px; font-size:0.85em; color:var(--ink-2);}
+.chart-legend .legend-item{display:inline-flex; align-items:center; gap:6px;}
+.chart-legend .dot{display:inline-block; width:10px; height:10px; border-radius:50%;}
+.chart-legend .line{display:inline-block; width:18px; height:0; border-top:2.2px solid; margin:0 1px;}
+.chart-legend .line.dashed{border-top-style:dashed;}
+.status{font-size:0.88em; color:var(--ink-2); margin-top:10px; white-space:pre-wrap; min-height:1.5em;}
+.status.err{color:var(--emared); font-weight:600;}
+.status .err{color:var(--emared); font-weight:600;}
+/* the result: one sentence under the plots, each number in the colour of the method it favours */
+.result-box{margin-top:14px; min-height:3.2em; font-size:1.02em; color:var(--ink); line-height:1.5;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
+.result-box:empty{visibility:hidden;}
+.result-box .better{color:var(--emablue);}
+.result-box .worse{color:var(--emared);}
+.result-box .tip{color:var(--ink-2); font-size:0.92em; margin-top:2px;}
+.result-box .waiting{color:var(--ink-2); font-style:italic;}
+.linslider{display:inline-flex; align-items:center; gap:8px;}
+.math{font-family:"Times New Roman",Times,serif; font-style:italic; font-size:1.12em;}
+.footnote{font-size:0.78em; color:var(--ink-2); font-weight:normal; margin-top:18px;}
+.linslider input[type=range]{width:104px;}
+.controls{display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; margin:2px 0 0;}
+/* one button: Train / Pause / Resume; wide enough for its longest label ("Preparing…") so the slider does
+   not move when the label changes */
+#startBtn{min-width:8.6em; white-space:nowrap;}
+/* while preparing it ignores clicks but keeps the keyboard focus (the disabled attribute would drop it) */
+#startBtn[aria-disabled="true"]{opacity:0.4; cursor:default;}
+.play-btn{
+  flex:0 0 auto; width:36px; height:36px; border-radius:50%;
+  border:1px solid var(--rule); background:#fff; color:var(--emablue);
+  font-size:0.85em; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; padding:0 0 0 2px;
+}
+.play-btn:hover{background:#f3f7fb}
+/* the slider is 320 px wide when there is room and shrinks with the box on a phone */
+.slider-col{display:flex; flex-direction:column; align-items:center; gap:4px; flex:0 1 320px; min-width:0;}
+.slider-col input[type=range]{width:100%}
+.slider-label{font-size:0.85em; color:var(--ink-2)}
+/* playback slider, like a video player: played | computed | not computed yet */
+/* drawn on the input itself, so it repaints whenever --pf/--bf change; --be lets the computed part
+   reach the right edge once training is done (the thumb-centre mapping alone stops 7 px short) */
+.slider-col input[type=range]{-webkit-appearance:none; appearance:none; height:18px; margin:0;
+  cursor:pointer; --pf:0; --bf:0; --be:0;
+  background:linear-gradient(to right, var(--emablue) calc(7px + (100% - 14px) * var(--pf)),
+    #aac6e0 0 calc(7px + (100% - 14px) * var(--bf) + 7px * var(--be)), #e6e7ea 0) center / 100% 6px no-repeat;}
+.slider-col input[type=range]:disabled{cursor:default; opacity:0.5;}
+.slider-col input[type=range]:focus{outline:none;}
+.slider-col input[type=range]::-moz-range-track{height:6px; border:none; background:transparent;}
+.slider-col input[type=range]::-webkit-slider-runnable-track{height:6px; border:none; background:transparent;}
+.slider-col input[type=range]::-moz-range-progress{background:transparent;}
+.slider-col input[type=range]::-moz-range-thumb{box-sizing:border-box; width:14px; height:14px; border-radius:50%;
+  background:var(--emablue); border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,0.25);}
+.slider-col input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; box-sizing:border-box; width:14px;
+  height:14px; margin-top:-4px; border-radius:50%; background:var(--emablue); border:2px solid #fff;
+  box-shadow:0 0 0 1px rgba(0,0,0,0.25);}
+.slider-col input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px rgba(31,119,180,0.35);}
+.slider-col input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px rgba(31,119,180,0.35);}
+.linslider input[type=number]{width:4.5em;}
+code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
+  border:1px solid var(--rule); border-radius:4px; padding:0.1em 0.4em; font-size:0.92em;}
+</style>
+<style id="emCodeStyle">
+  .em-code-pop{width:auto; white-space:nowrap;}
+  .em-nav .em-code-pop a.em-code-link{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-size:13px; color:#1f77b4;}
+</style>
+<style id="pgHeroStyle">
+  .pg-hero{padding:10px 0 11px; text-align:center;}
+  .pg-hero-inner{max-width:1140px; margin:0 auto; padding:0 24px;}
+  .pg-hero h1{font-size:24px; line-height:1.15; margin:0 0 2px; letter-spacing:-0.01em;}
+  .pg-hero p.lede{font-size:16px; color:var(--ink-2); margin:0; max-width:none;}
+</style>
+<style id="pgPhoneStyle">
+/* ===== Phones, tablets and touch screens. Every rule that changes the page is inside a media query that a
+   desktop browser (fine pointer, wider than 600 px) does not match, so desktops render exactly as before. ===== */
+.lbl{display:contents;}          /* label text wrapper: invisible on desktop, a grid cell on phones */
+.touch-note{display:none;}       /* the note on phone limits, shown on touch screens only */
+
+/* --- Touch screens (a finger is the main pointer): targets of at least 44 px, and 16 px text in the form
+   fields so that iOS does not zoom the page in when one is tapped (pinch-zoom stays available). --- */
+@media (pointer: coarse){
+  select, input[type=number]{font-size:16px; min-height:44px;}
+  #startBtn{min-height:44px;}
+  .em-copy{min-height:44px;}
+  .em-nav a.em-code-link{display:inline-block; padding:12px 0;}
+  fieldset input[type=range]{height:44px;}
+  /* the header links keep their look; an invisible margin around each one takes the finger */
+  .em-name, .em-nav a, .em-paper summary{position:relative;}
+  .em-name::after, .em-nav a::after, .em-paper summary::after{content:""; position:absolute;
+    left:-6px; right:-6px; top:-11px; bottom:-11px;}
+  /* playback slider: 44 px tall to grab, the visible track stays 6 px, the thumb grows from 14 to 26 px
+     (the played / computed bar is re-drawn for the bigger thumb) */
+  .slider-col input[type=range]{height:44px;
+    background:linear-gradient(to right, var(--emablue) calc(13px + (100% - 26px) * var(--pf)),
+      #aac6e0 0 calc(13px + (100% - 26px) * var(--bf) + 13px * var(--be)), #e6e7ea 0) center / 100% 6px no-repeat;}
+  .slider-col input[type=range]::-moz-range-thumb{width:26px; height:26px;}
+  .slider-col input[type=range]::-webkit-slider-thumb{width:26px; height:26px; margin-top:-10px;}
+  .touch-note{display:block;}
+}
+
+/* --- Below 940 px the Paper menu (680 px wide, anchored at its link) runs off the right edge: open both menus
+   under the header, inside the screen, and let the citation wrap --- */
+@media (max-width: 940px){
+  .em-header-inner{position:relative;}
+  .em-paper{position:static;}
+  .em-paper-pop{left:16px; right:16px; width:auto; max-width:680px; top:calc(100% - 4px);}
+  .em-code-pop{left:auto;}
+  .em-cite{white-space:pre-wrap;}
+}
+
+/* --- Phones held upright (up to 600 px wide) --- */
+@media (max-width: 600px){
+  /* header: the wordmark on its own line, shrunk to the screen; then the name with the two logos (smaller,
+     still plain images); then the links */
+  .em-header-inner{grid-template-columns:1fr auto; padding:10px 16px 6px; gap:6px 12px;}
+  .em-mark{grid-column:1 / -1; grid-row:1; justify-self:center; width:min(100%, 340px);}
+  .em-mark img{width:100%; height:auto;}
+  .em-left{display:contents;}
+  .em-name{grid-column:1; grid-row:2; align-self:center;}
+  .em-logos{grid-column:2; grid-row:2; gap:14px;}
+  .em-logos > span + span{padding-left:14px;}
+  .em-logos .logo-fair{height:12px;}
+  .em-logos .logo-enpc{height:32px;}
+  .em-nav{grid-column:1 / -1; grid-row:3; gap:4px 18px; flex-wrap:wrap;}
+  .em-nav a, .em-paper summary{white-space:nowrap;}
+  .pg-hero{padding:8px 0 9px;}
+  .pg-hero-inner{padding:0 16px;}
+  .pg-hero h1{font-size:22px;}
+  .pg-hero p.lede{font-size:15px; line-height:1.4;}
+  .wide{padding:10px 16px 48px;}
+  /* settings: one per line, as label | slider | value, with the slider taking what is left */
+  fieldset{min-width:0; padding:2px 12px 6px; margin-bottom:8px;}
+  .row{display:block; margin:0;}
+  .row > label{display:grid; grid-template-columns:6.4em minmax(0, 1fr) 5.2em; align-items:center;
+    column-gap:8px; margin:0; padding:1px 0; line-height:1.25;}
+  .lbl{display:block;}
+  .row > label > select, #genSeed{grid-column:2 / -1;}
+  #genSeed, #paramIters{justify-self:start;}
+  select{width:100%; min-width:0;}
+  .row input[type=range], #paramKlog{width:100%; min-width:0; margin:0;}
+  .row .logval{min-width:0;}
+  .controls{flex-wrap:nowrap; scroll-margin-top:8px;}
+  /* plots: Lloyd and e-means side by side at half width, the loss chart under them; the canvases keep
+     their shape (only their displayed size changes, never what is computed or drawn) */
+  .anim-row{padding:8px 8px 10px;}
+  .anim-panels{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:6px 10px;}
+  .anim-panels > div:nth-child(3){grid-column:1 / -1; justify-self:center; width:100%; max-width:360px;
+    margin-top:6px;}
+  .anim-row canvas{width:100% !important;}
+  .panel-title{width:auto; margin-bottom:4px;}
+  .pt-more{display:none;}
+  .readout{max-width:none; font-size:0.8em; line-height:1.35; min-height:4.05em;}
+  .chart-legend{font-size:0.875em;}
+  .footnote{font-size:0.875em;}
+}
+
+/* --- Phones held sideways (short screen, touch, wider than 600 px; a narrower one keeps the upright layout):
+   one-line header and title, and the three plots in one
+   row, sized so that a plot fits on the screen together with the Train button and the slider --- */
+@media (orientation: landscape) and (min-width: 601px) and (max-height: 500px) and (pointer: coarse){
+  .em-header-inner{grid-template-columns:1fr auto 1fr; padding:6px 24px; gap:6px 24px;}
+  .em-mark{grid-column:auto; grid-row:auto; width:auto;}
+  .em-mark img{height:36px; width:auto;}
+  .em-left{gap:0 20px;}
+  .em-nav{gap:16px;}
+  .em-logos{gap:14px;}
+  .em-logos > span + span{padding-left:14px;}
+  .em-logos .logo-fair{height:12px;}
+  .em-logos .logo-enpc{height:34px;}
+  .pg-hero{padding:6px 0 7px;}
+  .pg-hero-inner{display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center; column-gap:16px;}
+  .wide{padding-top:10px;}
+  .row > label{flex:1 1 auto; white-space:nowrap; margin:0;}
+  .row input[type=range], #paramKlog{width:60px; flex:1 1 60px; min-width:50px;}
+  select{max-width:10em;}
+  #genSeed{width:4.5em;}
+  .controls{scroll-margin-top:6px;}
+  .anim-row{padding:8px 12px 10px;}
+  .anim-panels{--pw:min(320px, calc(100vh - 130px), calc((100vw - 140px) / 3)); gap:16px;}
+  .anim-panels > div{width:var(--pw);}
+  .anim-row canvas{width:100% !important;}
+  .panel-title{width:auto;}
+  .pt-more{display:none;}
+  .readout{max-width:none;}
+}
+@supports (height: 100svh){
+  @media (orientation: landscape) and (min-width: 601px) and (max-height: 500px) and (pointer: coarse){
+    /* the small viewport: the screen height left when the browser's toolbars are showing */
+    .anim-panels{--pw:min(320px, calc(100svh - 130px), calc((100vw - 140px) / 3));}
+  }
+}
+</style>
+<meta name="description" content="Compare e-means with Lloyd k-means on 2D synthetic distributions">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://e-means.github.io/playground.html">
+<meta property="og:title" content="The e-means playground">
+<meta property="og:description" content="Compare e-means with Lloyd k-means on 2D synthetic distributions">
+<meta property="og:image" content="https://e-means.github.io/assets/emeans-wordmark.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The e-means playground">
+<meta name="twitter:description" content="Compare e-means with Lloyd k-means on 2D synthetic distributions">
+<meta name="twitter:image" content="https://e-means.github.io/assets/emeans-wordmark.png">
+</head>
+<body>
+<header class="em-header">
+  <div class="em-header-inner">
+    <div class="em-left">
+      <a class="em-name" href="https://swannbessa.github.io/">Swann Bessa</a>
+      <nav class="em-nav">
+        <a href="./">Blog post</a>
+        <details class="em-paper">
+          <summary>Paper</summary>
+          <div class="em-paper-pop">
+            <div class="em-paper-arxiv">arXiv: link added on release (the paper is under review)</div>
+            <pre class="em-cite" id="emCite">@misc{emeans2026,
+  title  = {E-means: outperforming k-means (in one-tenth the epochs)},
+  author = {Bessa, Swann and Mazar&eacute;, Pierre-Emmanuel and Szilvasy, Gergely
+            and Touvron, Hugo and Picard, David and Douze, Matthijs
+            and J&eacute;gou, Herv&eacute;},
+  year   = {2026}
+}</pre>
+            <button type="button" class="secondary em-copy" id="emCopy">Copy citation</button>
+          </div>
+        </details>
+        <a href="playground.html" class="active">Playground</a>
+        <details class="em-paper em-code">
+          <summary>Code</summary>
+          <div class="em-paper-pop em-code-pop">
+            <a class="em-code-link" href="https://github.com/swannbessa" target="_blank" rel="noopener">github.com/swannbessa</a>
+          </div>
+        </details>
+      </nav>
+    </div>
+    <a class="em-mark" href="assets/emeans-wordmark.png?v=silk320" aria-label="Zoom into the e-means logo"><img src="assets/emeans-wordmark.png?v=silk320" alt="e-means"></a>
+    <div class="em-logos">
+      <span><img class="logo-fair" src="assets/meta-fair-logo.png" alt="Meta FAIR"></span>
+      <span><img class="logo-enpc" src="assets/enpc-logo.png" alt="École nationale des ponts et chaussées"></span>
+    </div>
+  </div>
+</header>
+<header class="pg-hero">
+  <div class="pg-hero-inner">
+    <h1>The e-means playground</h1>
+    <p class="lede">Compare e-means with Lloyd k-means on 2D synthetic distributions</p>
+  </div>
+</header>
+<div class="wide">
+
+<fieldset>
+<legend>Data</legend>
+<div id="genControls" class="row">
+  <label>Shape
+    <select id="distSelect">
+      <option value="vo_toy">3 Gaussians</option>
+      <optgroup label="Geometric shapes">
+      <option value="spirals">Spirals (three arms)</option>
+      <option value="meta_logo">Meta logo</option>
+      <option value="heart">Heart</option>
+      <option value="star">Star outline</option>
+      <option value="checkerboard">Checkerboard</option>
+      <option value="sierpinski">Sierpinski triangle</option>
+      <option value="olympic_rings">Olympic rings</option>
+      <option value="lissajous">Lissajous curve</option>
+      <option value="galaxy">Galaxy</option>
+      <option value="flower">Flower</option>
+      </optgroup>
+      <optgroup label="Clustered shapes">
+      <option value="gaussian_blobs">Gaussian blobs</option>
+      <option value="gaussian_blobs_close">Gaussian blobs (close/overlapping)</option>
+      <option value="anisotropic_blobs">Anisotropic blobs</option>
+      <option value="uniform_cubes">Uniform cubes</option>
+      <option value="moons_tiled">Interleaving moons</option>
+      <option value="rings">Concentric rings</option>
+      <option value="duplicate_heavy">Duplicate-heavy blobs</option>
+      </optgroup>
+      <optgroup label="Paper appendix">
+      <option value="syn_unif_cube">Uniform cube</option>
+      <option value="syn_gauss_iso">Isotropic Gaussian</option>
+      <option value="syn_gauss_pow_a05">Stretched Gaussian (a = 1/2)</option>
+      <option value="syn_gauss_pow_a1">Stretched Gaussian (a = 1)</option>
+      <option value="syn_gauss_pow_a2">Stretched Gaussian (a = 2)</option>
+      <option value="syn_gmm">Gaussian mixture (G = K)</option>
+      <option value="syn_gmm_zipf">Gaussian mixture, Zipf-weighted (G = K)</option>
+      </optgroup>
+    </select>
+  </label>
+  <label class="logslider"><span class="lbl"><i class="math">n</i> (training points)</span>
+    <input type="range" id="genNlog" min="4" max="6" step="0.01" value="5">
+    <span class="logval" id="genNval">100,000</span>
+    <input type="hidden" id="genN" value="100000">
+  </label>
+  <label>Seed <input type="number" id="genSeed" value="0" min="0" step="1"></label>
+</div>
+</fieldset>
+
+<fieldset>
+<legend>Parameters</legend>
+<div class="row">
+  <label class="linslider">e-means epochs
+    <input type="range" id="paramEpochs" min="1" max="25" step="1" value="5">
+    <span class="logval" id="paramEpochsVal" style="min-width:2em;">5</span>
+  </label>
+  <label class="linslider">Lloyd epochs
+    <input type="range" id="paramItersRange" min="1" max="25" step="1" value="25">
+    <input type="number" id="paramIters" value="25" min="1" max="1000" step="1">
+  </label>
+  <label class="logslider"><span class="lbl">Clusters <i class="math">k</i></span>
+    <input type="range" id="paramKlog" min="2" max="4" step="any" value="2.69897">
+    <span class="logval" id="paramKval">500</span>
+    <input type="hidden" id="paramK" value="500">
+  </label>
+  <label class="speedslider" title="Slows the replay down. Training and the results are not affected.">Play speed
+    <input type="range" id="playSpeed" min="0.1" max="1" step="0.05" value="1" aria-label="Replay speed">
+    <span class="speedval" id="playSpeedVal">1&times;</span>
+  </label>
+</div>
+</fieldset>
+
+<div class="controls">
+  <button id="startBtn" data-mode="train" aria-disabled="false">&#9654;&#xFE0E; Train</button>
+  <div class="slider-col">
+    <input type="range" min="0" max="1" step="0.01" value="0" aria-label="Playback position in epochs" disabled>
+    <div class="slider-label">epochs: <span class="val">0.00</span><span class="wait"></span></div>
+  </div>
+</div>
+
+<div class="anim-row" id="animRow" style="display:none;">
+  <div class="anim-panels">
+  <div>
+    <div class="panel-title lloyd"><span>Lloyd<span class="pt-more"> (full batch)</span></span></div>
+    <canvas class="left" width="320" height="320"></canvas>
+    <div class="readout" data-r="lloyd"></div>
+  </div>
+  <div>
+    <div class="panel-title ema"><span>e-means<span class="pt-more"> (scaling-law batch + step)</span></span></div>
+    <canvas class="right" width="320" height="320"></canvas>
+    <div class="readout" data-r="ema"></div>
+  </div>
+  <div>
+    <div class="panel-title" style="color:var(--ink-2)">Loss (MSE): train vs held-out test</div>
+    <canvas class="chart" width="320" height="320"></canvas>
+    <div class="chart-legend" style="display:grid; grid-template-columns:auto auto; column-gap:16px; row-gap:4px; justify-content:center;">
+      <span class="legend-item"><i class="line" style="border-top-color:var(--emablue)"></i>e-means train</span>
+      <span class="legend-item"><i class="line dashed" style="border-top-color:var(--emablue)"></i>e-means test</span>
+      <span class="legend-item"><i class="line" style="border-top-color:var(--emared)"></i>Lloyd train</span>
+      <span class="legend-item"><i class="line dashed" style="border-top-color:var(--emared)"></i>Lloyd test</span>
+    </div>
+  </div>
+  </div>
+</div>
+<div class="result-box" id="resultBox" style="display:none;"></div>
+<div id="statusBox" class="status"></div>
+
+<p class="footnote">Note: e-means runs here with dead-cluster revival switched off, because on very
+low-dimensional data such as these 2-D sets revival degrades its results. Lloyd still re-seeds
+empty clusters as usual. Initialization is done with random sampling from the dataset.
+The batch size used is B/8, where B is the batch given by the default scaling law.</p>
+<p class="footnote touch-note">On phones and tablets this page keeps runs small, so that the tab
+fits in a phone's memory and a run takes about a minute: <i class="math">n</i> stops at about 300,000 points, a
+run may do at most 3 times the work of the default one (<i class="math">n</i> &times; <i class="math">k</i>
+&times; all epochs up to 4.5 billion), and training uses at most 4 threads. None of this changes the results.
+For bigger runs, use a computer.</p>
+
+<script>
+"use strict";
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function gaussian(rng) {
+  let u = 0, v = 0;
+  while (u === 0) u = rng();
+  while (v === 0) v = rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+function shuffledIndices(rng, n) {
+  const a = new Array(n);
+  for (let i = 0; i < n; i++) a[i] = i;
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+function choiceNoReplace(rng, n, k) {
+  return shuffledIndices(rng, n).slice(0, k);
+}
+function weightedChoice(rng, items, weights, wsum) {
+  let r = rng() * wsum;
+  for (let i = 0; i < items.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return items[i];
+  }
+  return items[items.length - 1];
+}
+
+function multinomialSizes(rng, n, k) {
+  const sizes = new Array(k).fill(0);
+  for (let i = 0; i < n; i++) sizes[Math.floor(rng() * k)]++;
+  return sizes;
+}
+function weightedMultinomialSizes(rng, n, weights) {
+  const k = weights.length;
+  const wsum = weights.reduce((a, b) => a + b, 0);
+  const cum = new Array(k);
+  let acc = 0;
+  for (let i = 0; i < k; i++) { acc += weights[i] / wsum; cum[i] = acc; }
+  const sizes = new Array(k).fill(0);
+  for (let i = 0; i < n; i++) {
+    const r = rng();
+    let lo = 0, hi = k - 1;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (cum[mid] < r) lo = mid + 1; else hi = mid; }
+    sizes[lo]++;
+  }
+  return sizes;
+}
+function padRows(rng, rows, fromDim, d) {
+  if (fromDim >= d) return rows.map(r => r.slice(0, d));
+  return rows.map(r => {
+    const row = r.slice();
+    for (let e = fromDim; e < d; e++) row.push(gaussian(rng) * 0.05);
+    return row;
+  });
+}
+function genGaussianBlobs(n, k, d, seed, spread) {
+  spread = spread || 1.0;
+  const rng = mulberry32(seed);
+  const centers = Array.from({ length: k }, () => Array.from({ length: d }, () => rng() * 20 - 10));
+  const sizes = multinomialSizes(rng, n, k);
+  const rows = [];
+  for (let i = 0; i < k; i++) {
+    for (let s = 0; s < sizes[i]; s++) {
+      rows.push(centers[i].map(c => c + gaussian(rng) * spread));
+    }
+  }
+  return rows;
+}
+function genAnisotropicBlobs(n, k, d, seed) {
+  const rng = mulberry32(seed);
+  const centers = Array.from({ length: k }, () => Array.from({ length: d }, () => rng() * 20 - 10));
+  const sizes = multinomialSizes(rng, n, k);
+  const rows = [];
+  for (let i = 0; i < k; i++) {
+    const scale = Array.from({ length: d }, () => rng() * 2.8 + 0.2);
+    for (let s = 0; s < sizes[i]; s++) {
+      rows.push(centers[i].map((c, t) => c + gaussian(rng) * scale[t]));
+    }
+  }
+  return rows;
+}
+function genUniformCubes(n, k, d, seed, side) {
+  side = side || 2.0;
+  const rng = mulberry32(seed);
+  const centers = Array.from({ length: k }, () => Array.from({ length: d }, () => rng() * 20 - 10));
+  const sizes = multinomialSizes(rng, n, k);
+  const rows = [];
+  for (let i = 0; i < k; i++) {
+    for (let s = 0; s < sizes[i]; s++) {
+      rows.push(centers[i].map(c => c + (rng() * 2 - 1) * side));
+    }
+  }
+  return rows;
+}
+function genMoonsTiled(n, k, d, seed, noise) {
+  noise = noise || 0.08;
+  const rng = mulberry32(seed);
+  const pairs = Math.max(1, Math.floor(k / 2));
+  const perPair = Math.floor(n / pairs);
+  const rows = [];
+  for (let p = 0; p < pairs; p++) {
+    const cx = rng() * 30 - 15, cy = rng() * 30 - 15;
+    const half = Math.floor(perPair / 2);
+    for (let i = 0; i < perPair; i++) {
+      const t = rng() * Math.PI;
+      let x, y;
+      if (i < half) { x = Math.cos(t); y = Math.sin(t); }
+      else { x = 1 - Math.cos(t); y = 1 - Math.sin(t) - 0.5; }
+      x = x * 6 + cx + gaussian(rng) * noise * 6;
+      y = y * 6 + cy + gaussian(rng) * noise * 6;
+      const row = [x, y];
+      for (let e = 2; e < d; e++) row.push(gaussian(rng) * 0.05);
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+function genGaussianBlobsClose(n, k, d, seed) {
+
+  const rng = mulberry32(seed);
+  const centers = Array.from({ length: k }, () => Array.from({ length: d }, () => rng() * 4 - 2));
+  const sizes = multinomialSizes(rng, n, k);
+  const rows = [];
+  for (let i = 0; i < k; i++) {
+    for (let s = 0; s < sizes[i]; s++) {
+      rows.push(centers[i].map(c => c + gaussian(rng)));
+    }
+  }
+  return rows;
+}
+function genRings(n, k, d, seed) {
+  const rng = mulberry32(seed);
+  const nRings = Math.max(2, Math.floor(k / 4));
+  const perRing = Math.floor(n / nRings);
+  const rows = [];
+  for (let i = 0; i < nRings; i++) {
+    const r = 2.0 + i * 3.0;
+    for (let s = 0; s < perRing; s++) {
+      const theta = rng() * 2 * Math.PI;
+      const x = r * Math.cos(theta) + gaussian(rng) * 0.3;
+      const y = r * Math.sin(theta) + gaussian(rng) * 0.3;
+      rows.push([x, y]);
+    }
+  }
+  return padRows(rng, rows, 2, d);
+}
+function genDuplicateHeavy(n, k, d, seed, dupFrac) {
+  dupFrac = dupFrac || 0.3;
+  const rng = mulberry32(seed);
+  const nUnique = Math.max(k, Math.round(n * (1 - dupFrac)));
+  const base = genGaussianBlobs(nUnique, k, d, seed);
+  const extra = [];
+  for (let i = 0; i < n - nUnique; i++) extra.push(base[Math.floor(rng() * base.length)]);
+  return base.concat(extra);
+}
+
+function genSynUnifCube(n, k, d, seed) {
+  const rng = mulberry32(seed);
+  const half = Math.sqrt(3);
+  const rows = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const r = new Array(d);
+    for (let t = 0; t < d; t++) r[t] = (rng() * 2 - 1) * half;
+    rows[i] = r;
+  }
+  return rows;
+}
+function genSynGaussPow(alpha) {
+  return function (n, k, d, seed) {
+    const rng = mulberry32(seed);
+
+    const lam = Array.from({ length: d }, (_, i) => Math.pow(i + 1, -alpha));
+    const sum = lam.reduce((a, b) => a + b, 0);
+    const sd = lam.map(v => Math.sqrt(v * d / sum));
+    const rows = new Array(n);
+    for (let i = 0; i < n; i++) {
+      const r = new Array(d);
+      for (let t = 0; t < d; t++) r[t] = gaussian(rng) * sd[t];
+      rows[i] = r;
+    }
+    return rows;
+  };
+}
+function genSynGmm(zipf) {
+  return function (n, k, d, seed) {
+    const rng = mulberry32(seed);
+
+    const sw = Math.sqrt(1 / 3), smu = Math.sqrt(2 / 3);
+    const means = Array.from({ length: k }, () => Array.from({ length: d }, () => gaussian(rng) * smu));
+    const sizes = zipf > 0
+      ? weightedMultinomialSizes(rng, n, Array.from({ length: k }, (_, g) => Math.pow(g + 1, -zipf)))
+      : multinomialSizes(rng, n, k);
+    const rows = [];
+    for (let g = 0; g < k; g++) {
+      const mu = means[g];
+      for (let s = 0; s < sizes[g]; s++) rows.push(mu.map(m => m + gaussian(rng) * sw));
+    }
+    return rows;
+  };
+}
+
+function splitCounts(n, weights) {
+  const s = weights.reduce((a, b) => a + b, 0);
+  const c = weights.map(w => Math.floor(n * w / s));
+  c[0] += n - c.reduce((a, b) => a + b, 0);
+  return c;
+}
+function genVoToy(n, k, d, seed) {
+  const rng = mulberry32(seed);
+  const c = splitCounts(n, [7000, 1000, 500, 500]);
+  const rows = [];
+  const blob = (m, cx, cy) => { for (let i = 0; i < m; i++) rows.push([cx + gaussian(rng) / 2, cy + gaussian(rng) / 2]); };
+  blob(c[0], -1, -1); blob(c[1], 1, -1); blob(c[2], 0, 1);
+  for (let i = 0; i < c[3]; i++) rows.push([(rng() - 0.5) * 6, (rng() - 0.5) * 6]);
+  return padRows(rng, rows, 2, d);
+}
+
+function rejection(n, rng, draw, keep) {
+  const rows = [];
+  while (rows.length < n) { const p = draw(); if (keep(p)) rows.push(p); }
+  return rows;
+}
+function genSpirals(n, k, d, seed) {
+  const rng = mulberry32(seed), rows = new Array(n), arms = 3;
+  for (let i = 0; i < n; i++) {
+    const t = Math.sqrt(rng()) * 3 * Math.PI, a = t + Math.floor(rng() * arms) * 2 * Math.PI / arms;
+    const r = t / (3 * Math.PI);
+    rows[i] = [r * Math.cos(a) + gaussian(rng) * 0.05, r * Math.sin(a) + gaussian(rng) * 0.05];
+  }
+  return padRows(rng, rows, 2, d);
+}
+
+const META_LOGO = { nx: 1150, ny: 764, b64: "AADEACAAAACnAyEAAQC4ADYAAQCbAzcAAgCwAEYAAgCTA0cAAwCqAFEAAwCNA1IABACkAFwABACIA1wABQCfAGUABQCDA2YABgCbAG0ABgB/A24ABwCXAHUABwB7A3UACACUAHsACAB4A3wACQCQAIIACQB1A4IACgCNAIgACgByA4gACwCKAI4ACwBvA40ADACHAJMADABsA5MADQCEAJkADQBpA5kADgCCAJ0ADgBnA50ADwB/AKIADwBlA6EAEAB9AKcAEABiA6cAEQB7AKsAEQBgA6sAEgB5AK8AEgBeA68AEwB2ALQAEwBcA7MAFAB0ALgAFABaA7cAFQByALwAFQBYA7sAFgBwAL8AFgBWA74AFwBvAMIAFwBUA8IAGABtAMYAGABTA8UAGQBrAMoAGQBRA8gAGgBpAM0AGgBPA8wAGwBoANAAGwBOA88AHABmANQAHABMA9IAHQBkANcAHQBKA9YAHgBjANoAHgBJA9gAHwBhAN0AHwBHA9wAIABgAOAAIABGA94AIQBeAOMAIQBEA+EAIgBdAOYAIgBDA+QAIwBcAOgAIwBCA+YAJABaAOsAJABAA+kAJQBZAO4AJQA/A+wAJgBYAPAAJgA9A+8AJwBWAPMAJwA8A/EAKABVAPYAKAA7A/MAKQBUAPgAKQA5A/YAKgBTAPoAKgA4A/kAKwBRAP0AKwA3A/sALABQAAABLAA2A/0ALQBPAAIBLQA0AwABLgBOAAQBLgAzAwIBLwBNAAYBLwAyAwQBMABMAAgBMAAxAwYBMQBLAAsBMQAwAwgBMgBKAA0BMgAvAwoBMwBJAA8BMwAtAw0BNABIABEBNAAsAw8BNQBHABMBNQArAxEBNgBGABUBNgAqAxMBNwBFABcBNwApAxUBOABEABkBOAAoAxcBOQBDABwBOQAnAxkBOgBCAB4BOgAmAxsBOwBBACABOwAlAxwBPABAACIBPAAkAx4BPQA/ACQBPQAjAyABPgA+ACYBPgAiAyIBPwA9ACgBPwAhAyQBQAA8ACoBQAAgAyYBQQA8ACsBQQAfAycBQgA7AC0BQgAeAykBQwA6AC8BQwAdAysBRAA5ADEBRAAcAy0BRQA4ADMBRQAbAy4BRgA4ADQBRgAaAzABRwA3ADYBRwAZAzIBSAA2ADgBSAAYAzQBSQA1ADkBSQAXAzUBSgA0ADsBSgAWAzcBSwA0ADwBSwAVAzkBTAAzAD4BTAAUAzoBTQAyAEABTQATAzwBTgAyAEEBTgASAz4BTwAxAEMBTwARAz8BUAAwAEUBUAARA0ABUQAwAEYBUQAQA0IBUgAvAEgBUgAPA0MBUwAuAEoBUwAOA0UBVAAuAEoBVAANA0YBVQAtAEwBVQAMA0gBVgAsAE4BVgALA0oBVwAsAE8BVwAKA0sBWAArAFEBWAAKA0wBWQAqAFMBWQAJA00BWgAqAFQBWgAIA08BWwApAFUBWwAHA1EBXAAoAFcBXAAGA1IBXQAoAFgBXQAFA1QBXgAnAFoBXgAFA1QBXwAnAFsBXwAEA1YBYAAmAF0BYAADA1cBYQAmAF0BYQACA1kBYgAlAF8BYgABA1oBYwAkAGEBYwAAA1wBZAAkAGIBZAAAA1wBZQAjAGQBZQD/Al4BZgAjAGQBZgD+Al8BZwAiAGYBZwD9AmEBaAAiAGcBaAD8AmIBaQAhAGkBaQD8AmMBagAhAGoBagD7AmQBawAgAGsBawD6AmYBbAAgAGwBbAD5AmcBbQAfAG4BbQD4AmkBbgAfAG8BbgD4AmkBbwAeAHABbwD3AmoBcAAeAHEBcAD2AmwBcQAdAHMBcQD1Am0BcgAdAHQBcgD1Am4BcwAcAHYBcwD0Am8BdAAcAHYBdADzAnEBdQAbAHgBdQDyAnIBdgAbAHkBdgDyAnMBdwAbAHoBdwDxAnQBeAAaAHsBeADwAnUBeQAaAHwBeQDvAncBegAZAH4BegDvAncBewAZAH4BewDuAnkBfAAYALQAfADgALgAfADtAsMAfADCA6UAfQAYAK4AfQDoALEAfQDsAr0AfQDKA50AfgAYAKkAfgDtAK0AfgDsArgAfgDOA5oAfwAXAKcAfwDwAKoAfwDrArYAfwDSA5YAgAAXAKQAgAD0AKcAgADqArQAgADVA5MAgQAWAKIAgQD2AKYAgQDpArIAgQDYA5EAggAWAKAAggD5AKQAggDpArAAggDbA44AgwAWAJ0AgwD7AKIAgwDoAq8AgwDdA40AhAAVAJwAhAD9AKEAhADnAq4AhADfA4sAhQAVAJsAhQD/AKAAhQDmAq0AhQDhA4kAhgAVAJkAhgABAZ8AhgDmAqsAhgDjA4gAhwAUAJgAhwADAZ0AhwDlAqsAhwDkA4cAiAAUAJcAiAAFAZwAiADkAqoAiADmA4UAiQAUAJUAiQAGAZwAiQDkAqkAiQDnA4UAigATAJUAigAIAZoAigDjAqgAigDpA4MAiwATAJQAiwAJAZoAiwDiAqgAiwDqA4IAjAASAJMAjAALAZkAjADhAqcAjADrA4IAjQASAJIAjQAMAZkAjQDhAqYAjQDsA4EAjgASAJEAjgAOAZcAjgDgAqYAjgDtA4AAjwARAJEAjwAPAZcAjwDfAqYAjwDvA38AkAARAJAAkAAQAZcAkADfAqQAkADwA34AkQARAI8AkQASAZUAkQDeAqQAkQDxA30AkgARAI4AkgATAZUAkgDdAqQAkgDyA3wAkwAQAI4AkwAUAZUAkwDcAqQAkwDyA30AlAAQAI0AlAAVAZUAlADcAqMAlADzA3wAlQAQAIwAlQAWAZQAlQDbAqMAlQD0A3sAlgAPAIwAlgAYAZMAlgDaAqMAlgD1A3sAlwAPAIsAlwAZAZMAlwDaAqIAlwD2A3oAmAAPAIoAmAAaAZIAmADZAqIAmAD3A3kAmQAOAIoAmQAbAZIAmQDYAqIAmQD3A3oAmgAOAIoAmgAcAZIAmgDYAqEAmgD4A3kAmwAOAIkAmwAdAZEAmwDXAqEAmwD5A3gAnAAOAIgAnAAeAZEAnADWAqEAnAD6A3cAnQANAIkAnQAfAZEAnQDWAqAAnQD6A3gAngANAIgAngAgAZAAngDVAqAAngD7A3cAnwANAIcAnwAhAZAAnwDUAqAAnwD7A3cAoAAMAIgAoAAiAZAAoADUAp8AoAD8A3YAoQAMAIcAoQAjAY8AoQDTAp8AoQD9A3YAogAMAIYAogAkAY8AogDSAp8AogD9A3YAowAMAIYAowAlAY8AowDSAp4AowD+A3UApAALAIYApAAmAY4ApADRAp4ApAD+A3UApQALAIUApQAnAY4ApQDQAp4ApQD/A3UApgALAIUApgAoAY4ApgDQAp4ApgD/A3UApwALAIQApwApAY0ApwDPAp4ApwAABHQAqAAKAIUAqAAqAY0AqADOAp4AqAAABHQAqQAKAIQAqQArAY0AqQDOAp0AqQABBHMAqgAKAIQAqgAsAYwAqgDNAp0AqgABBHQAqwAKAIMAqwAsAY0AqwDMAp0AqwACBHMArAAKAIMArAAtAY0ArADMApwArAACBHMArQAJAIMArQAuAYwArQDLAp0ArQADBHIArgAJAIMArgAvAYwArgDKAp0ArgADBHMArwAJAIMArwAwAYwArwDKApwArwADBHMAsAAJAIIAsAAxAYsAsADJApwAsAAEBHIAsQAIAIMAsQAyAYsAsQDIApwAsQAEBHIAsgAIAIIAsgAzAYoAsgDIApwAsgAFBHEAswAIAIIAswAzAYsAswDHApwAswAFBHIAtAAIAIEAtAA0AYsAtADGApwAtAAFBHIAtQAIAIEAtQA1AYoAtQDGApsAtQAGBHEAtgAHAIIAtgA2AYoAtgDFApwAtgAGBHEAtwAHAIEAtwA3AYoAtwDEApwAtwAGBHEAuAAHAIEAuAA4AYkAuADEApsAuAAHBHEAuQAHAIEAuQA4AYoAuQDDApsAuQAHBHEAugAHAIAAugA5AYkAugDCApwAugAHBHEAuwAGAIEAuwA6AYkAuwDCApsAuwAIBHAAvAAGAIEAvAA7AYkAvADBApsAvAAIBHAAvQAGAIAAvQA8AYgAvQDBApoAvQAIBHAAvgAGAIAAvgA8AYkAvgDAApsAvgAJBHAAvwAGAIAAvwA9AYkAvwC/ApsAvwAJBHAAwAAGAH8AwAA+AYgAwAC/ApoAwAAJBHAAwQAFAIAAwQA/AYgAwQC+ApoAwQAJBHAAwgAFAIAAwgBAAYcAwgC9ApsAwgAKBG8AwwAFAH8AwwBAAYgAwwC9ApoAwwAKBG8AxAAFAH8AxABBAYgAxAC8ApoAxAAKBG8AxQAFAH8AxQBCAYcAxQC8ApoAxQAKBHAAxgAFAH8AxgBDAYcAxgC7ApoAxgALBG8AxwAFAH4AxwBDAYcAxwC6ApoAxwALBG8AyAAEAH8AyABEAYcAyAC6ApkAyAALBG8AyQAEAH8AyQBFAYcAyQC5ApoAyQALBG8AygAEAH8AygBGAYYAygC4ApoAygALBG8AywAEAH4AywBGAYcAywC4ApkAywAMBG4AzAAEAH4AzABHAYYAzAC3ApoAzAAMBG8AzQAEAH4AzQBIAYYAzQC3ApkAzQAMBG8AzgAEAH4AzgBJAYYAzgC2ApkAzgAMBG8AzwADAH4AzwBJAYYAzwC1ApkAzwAMBG8A0AADAH4A0ABKAYYA0AC1ApkA0AANBG4A0QADAH4A0QBLAYUA0QC0ApkA0QANBG4A0gADAH4A0gBLAYYA0gC0ApgA0gANBG4A0wADAH4A0wBMAYYA0wCzApkA0wANBG4A1AADAH0A1ABNAYUA1ACyApkA1AANBG4A1QADAH0A1QBOAYUA1QCyApgA1QANBG8A1gADAH0A1gBOAYUA1gCxApkA1gANBG8A1wADAH0A1wBPAYUA1wCxApgA1wAOBG4A2AACAH4A2ABQAYUA2ACwApgA2AAOBG4A2QACAH4A2QBQAYUA2QCvApkA2QAOBG4A2gACAH0A2gBRAYUA2gCvApgA2gAOBG4A2wACAH0A2wBSAYQA2wCuApgA2wAOBG4A3AACAH0A3ABTAYQA3ACuApgA3AAOBG4A3QACAH0A3QBTAYUA3QCtApgA3QAOBG4A3gACAH0A3gBUAYQA3gCsApgA3gAPBG0A3wACAH0A3wBVAYQA3wCsApgA3wAPBG4A4AACAH0A4ABVAYQA4ACrApgA4AAPBG4A4QACAHwA4QBWAYQA4QCrApcA4QAPBG4A4gABAH0A4gBXAYQA4gCqApgA4gAPBG4A4wABAH0A4wBYAYMA4wCpApgA4wAPBG4A5AABAH0A5ABYAYQA5ACpApcA5AAPBG4A5QABAH0A5QBZAYMA5QCoApgA5QAPBG4A5gABAH0A5gBaAYMA5gCoApcA5gAPBG4A5wABAH0A5wBaAYMA5wCnApcA5wAPBG4A6AABAH0A6ABbAYMA6ACmApgA6AAQBG0A6QABAHwA6QBcAYMA6QCmApcA6QAQBG0A6gABAHwA6gBcAYMA6gClApcA6gAQBG0A6wABAHwA6wBdAYMA6wClApcA6wAQBG0A7AABAHwA7ABeAYIA7ACkApcA7AAQBG0A7QABAHwA7QBeAYMA7QCjApcA7QAQBG0A7gABAHwA7gBfAYMA7gCjApcA7gAQBG4A7wABAHwA7wBgAYIA7wCiApcA7wAQBG4A8AABAHwA8ABhAYIA8ACiApYA8AAQBG4A8QABAHwA8QBhAYIA8QChApcA8QAQBG4A8gAAAH0A8gBiAYIA8gCgApcA8gAQBG4A8wAAAH0A8wBjAYEA8wCgApYA8wAQBG4A9AAAAH0A9ABjAYIA9ACfApcA9AAQBG4A9QAAAH0A9QBkAYIA9QCfApYA9QAQBG4A9gAAAH0A9gBlAYEA9gCeApYA9gAQBG4A9wAAAH0A9wBlAYIA9wCdApcA9wAQBG4A+AAAAHwA+ABmAYEA+ACdApYA+AAQBG4A+QAAAHwA+QBnAYEA+QCcApYA+QAQBG4A+gAAAHwA+gBnAYIA+gCcApYA+gAQBG4A+wAAAHwA+wBoAYEA+wCbApYA+wAQBG4A/AAAAHwA/ABpAYEA/ACaApYA/AARBG0A/QAAAHwA/QBpAYEA/QCaApYA/QARBG0A/gAAAHwA/gBqAYEA/gCZApYA/gARBG0A/wAAAHwA/wBrAYAA/wCZApYA/wARBG0AAAEAAHwAAAFrAYEAAAGYApYAAAERBG0AAQEAAHwAAQFsAYEAAQGXApYAAQERBG0AAgEAAHwAAgFtAYAAAgGXApYAAgERBG0AAwEAAHwAAwFtAYEAAwGWApYAAwERBG0ABAEAAHwABAFuAYAABAGWApUABAERBG0ABQEAAHwABQFvAYAABQGVApYABQERBG0ABgEAAHwABgFvAYAABgGUApYABgERBG0ABwEAAHwABwFwAYAABwGUApUABwERBG0ACAEAAHwACAFxAYAACAGTApYACAERBG0ACQEAAHwACQFxAYAACQGTApUACQERBG0ACgEAAHwACgFyAYAACgGSApYACgERBG0ACwEAAHwACwFzAX8ACwGRApYACwERBG0ADAEAAHwADAFzAYAADAGRApUADAERBG0ADQEAAHwADQF0AX8ADQGQApYADQERBG0ADgEAAHwADgF1AX8ADgGQApUADgERBG0ADwEAAHwADwF1AYAADwGPApUADwERBG0AEAEAAHwAEAF2AX8AEAGOApYAEAERBG0AEQEAAHwAEQF3AX8AEQGOApUAEQERBG0AEgEAAHwAEgF3AX8AEgGNApUAEgERBG0AEwEAAHwAEwF4AX8AEwGNApUAEwERBG0AFAEAAHwAFAF5AX4AFAGMApUAFAERBG0AFQEAAH0AFQF5AX8AFQGLApYAFQEQBG4AFgEAAH0AFgF6AX8AFgGLApUAFgEQBG4AFwEAAH0AFwF7AX4AFwGKApUAFwEQBG4AGAEAAH0AGAF7AX8AGAGKApUAGAEQBG4AGQEAAH0AGQF8AX4AGQGJApUAGQEQBG4AGgEAAH0AGgF9AX4AGgGIApUAGgEQBG4AGwEAAH0AGwF9AX4AGwGIApUAGwEQBG4AHAEAAH0AHAF+AX4AHAGHApUAHAEQBG4AHQEAAH0AHQF/AX4AHQGHApQAHQEQBG4AHgEAAH0AHgF/AX4AHgGGApUAHgEQBG4AHwEAAH0AHwGAAX4AHwGFApUAHwEQBG4AIAEAAH0AIAGAAX4AIAGFApUAIAEQBG4AIQEAAH0AIQGBAX4AIQGEApUAIQEQBG4AIgEBAHwAIgGCAX0AIgGEApQAIgEQBG4AIwEBAHwAIwGCAX4AIwGDApUAIwEQBG4AJAEBAHwAJAGDAX0AJAGCApUAJAEQBG4AJQEBAHwAJQGEAX0AJQGCApQAJQEQBG4AJgEBAHwAJgGEAX4AJgGBApUAJgEQBG4AJwEBAHwAJwGFAX0AJwGBApQAJwEQBG4AKAEBAHwAKAGGAX0AKAGAApUAKAEQBG4AKQEBAHwAKQGGAX0AKQF/ApUAKQEQBG4AKgEBAH0AKgGHAX0AKgF/ApQAKgEQBG4AKwEBAH0AKwGIAXwAKwF+ApUAKwEQBG4ALAEBAH0ALAGIAX0ALAF+ApQALAEQBG0ALQEBAH0ALQGJAX0ALQF9ApUALQEQBG0ALgEBAH0ALgGKAXwALgF8ApUALgEQBG0ALwEBAH0ALwGKAX0ALwF8ApQALwEPBG4AMAEBAH0AMAGLAXwAMAF7ApUAMAEPBG4AMQEBAH0AMQGLAX0AMQF7ApQAMQEPBG4AMgEBAH0AMgGMAXwAMgF6ApQAMgEPBG4AMwEBAH0AMwGNAXwAMwF5ApUAMwEPBG4ANAEBAH0ANAGNAX0ANAF5ApQANAEPBG4ANQEBAH0ANQGOAXwANQF4ApUANQEPBG4ANgECAHwANgGPAXwANgF4ApQANgEPBG4ANwECAH0ANwGPAXwANwF3ApQANwEPBG4AOAECAH0AOAGQAXwAOAF2ApUAOAEPBG4AOQECAH0AOQGRAXsAOQF2ApQAOQEPBG4AOgECAH0AOgGRAXwAOgF1ApQAOgEPBG4AOwECAH0AOwGSAXwAOwF1ApQAOwEPBG4APAECAH0APAGTAXsAPAF0ApQAPAEPBG4APQECAH0APQGTAXwAPQFzApUAPQEOBG8APgECAH0APgGUAXsAPgFzApQAPgEOBG4APwECAH0APwGUAXwAPwFyApQAPwEOBG4AQAECAH0AQAGVAXsAQAFyApQAQAEOBG4AQQECAH0AQQGWAXsAQQFxApQAQQEOBG4AQgECAH4AQgGWAXsAQgFwApUAQgEOBG4AQwEDAH0AQwGXAXsAQwFwApQAQwEOBG4ARAEDAH0ARAGYAXsARAFvApQARAEOBG4ARQEDAH0ARQGYAXsARQFvApQARQEOBG4ARgEDAH0ARgGZAXsARgFuApQARgEOBG4ARwEDAH0ARwGaAXoARwFtApQARwEOBG4ASAEDAH0ASAGaAXsASAFtApQASAEOBG4ASQEDAH0ASQGbAXoASQFsApQASQENBG8ASgEDAH0ASgGbAXsASgFsApQASgENBG8ASwEDAH4ASwGcAXsASwFrApQASwENBG4ATAEDAH4ATAGdAXoATAFrApMATAENBG4ATQEDAH4ATQGdAXsATQFqApQATQENBG4ATgEEAH0ATgGeAXoATgFpApQATgENBG4ATwEEAH0ATwGfAXoATwFpApQATwENBG4AUAEEAH0AUAGfAXoAUAFoApQAUAENBG4AUQEEAH0AUQGgAXoAUQFoApMAUQENBG4AUgEEAH4AUgGhAXkAUgFnApQAUgENBG4AUwEEAH4AUwGhAXoAUwFmApQAUwEMBG8AVAEEAH4AVAGiAXoAVAFmApQAVAEMBG8AVQEEAH4AVQGiAXoAVQFlApQAVQEMBG8AVgEEAH4AVgGjAXoAVgFlApMAVgEMBG4AVwEFAH0AVwGkAXkAVwFkApQAVwEMBG4AWAEFAH0AWAGkAXoAWAFjApQAWAEMBG4AWQEFAH0AWQGlAXkAWQFjApQAWQEMBG4AWgEFAH4AWgGmAXkAWgFiApQAWgEMBG4AWwEFAH4AWwGmAXoAWwFiApMAWwELBG8AXAEFAH4AXAGnAXkAXAFhApQAXAELBG8AXQEFAH4AXQGoAXkAXQFgApQAXQELBG8AXgEFAH4AXgGoAXkAXgFgApMAXgELBG8AXwEGAH0AXwGpAXkAXwFfApQAXwELBG8AYAEGAH4AYAGpAXkAYAFfApMAYAELBG4AYQEGAH4AYQGqAXkAYQFeApQAYQELBG4AYgEGAH4AYgGrAXkAYgFdApQAYgELBG4AYwEGAH4AYwGrAXkAYwFdApMAYwEKBG8AZAEGAH4AZAGsAXkAZAFcApQAZAEKBG8AZQEGAH4AZQGtAXgAZQFcApMAZQEKBG8AZgEGAH4AZgGtAXkAZgFbApQAZgEKBG8AZwEHAH4AZwGuAXgAZwFaApQAZwEKBG8AaAEHAH4AaAGvAXgAaAFaApMAaAEKBG4AaQEHAH4AaQGvAXgAaQFZApQAaQEKBG4AagEHAH4AagGwAXgAagFZApMAagEKBG4AawEHAH4AawGwAXkAawFYApQAawEJBG8AbAEHAH8AbAGxAXgAbAFXApQAbAEJBG8AbQEHAH8AbQGyAXgAbQFXApMAbQEJBG8AbgEIAH4AbgGyAXgAbgFWApQAbgEJBG8AbwEIAH4AbwGzAXgAbwFWApMAbwEJBG8AcAEIAH4AcAG0AXcAcAFVApQAcAEJBG4AcQEIAH4AcQG0AXgAcQFUApQAcQEIBG8AcgEIAH8AcgG1AXgAcgFUApMAcgEIBG8AcwEIAH8AcwG1AXgAcwFTApQAcwEIBG8AdAEJAH4AdAG2AXgAdAFTApMAdAEIBG8AdQEJAH4AdQG3AXcAdQFSApQAdQEIBG8AdgEJAH4AdgG3AXgAdgFRApQAdgEIBG8AdwEJAH8AdwG4AXcAdwFRApMAdwEIBG4AeAEJAH8AeAG5AXcAeAFQApQAeAEHBG8AeQEJAH8AeQG5AXgAeQFQApMAeQEHBG8AegEJAH8AegG6AXcAegFPApQAegEHBG8AewEKAH4AewG7AXcAewFOApQAewEHBG8AfAEKAH8AfAG7AXcAfAFOApMAfAEHBG8AfQEKAH8AfQG8AXcAfQFNApQAfQEGBG8AfgEKAH8AfgG8AXcAfgFNApMAfgEGBG8AfwEKAH8AfwG9AXcAfwFMApQAfwEGBG8AgAELAH4AgAG+AXYAgAFLApQAgAEGBG8AgQELAH8AgQG+AXcAgQFLApMAgQEGBG8AggELAH8AggG/AXcAggFKApQAggEGBG8AgwELAH8AgwHAAXYAgwFKApMAgwEFBHAAhAELAH8AhAHAAXcAhAFJApQAhAEFBG8AhQELAH8AhQHBAXYAhQFIApQAhQEFBG8AhgEMAH8AhgHCAXYAhgFIApMAhgEFBG8AhwEMAH8AhwHCAXYAhwFHApQAhwEFBG8AiAEMAH8AiAHDAXYAiAFHApMAiAEEBHAAiQEMAH8AiQHDAXcAiQFGApQAiQEEBG8AigEMAIAAigHEAXYAigFFApQAigEEBG8AiwENAH8AiwHFAXYAiwFFApMAiwEEBG8AjAENAH8AjAHFAXYAjAFEApQAjAEEBG8AjQENAH8AjQHGAXYAjQFEApMAjQEEBG8AjgENAIAAjgHHAXUAjgFDApQAjgEDBHAAjwENAIAAjwHHAXYAjwFCApQAjwEDBG8AkAENAIAAkAHIAXUAkAFCApMAkAEDBG8AkQEOAH8AkQHJAXUAkQFBApQAkQEDBG8AkgEOAH8AkgHJAXYAkgFBApMAkgEDBG8AkwEOAIAAkwHKAXUAkwFAApQAkwECBHAAlAEOAIAAlAHKAQkBlAECBG8AlQEPAH8AlQHLAQcBlQECBG8AlgEPAH8AlgHMAQYBlgECBG8AlwEPAIAAlwHMAQUBlwEBBHAAmAEPAIAAmAHNAQQBmAEBBHAAmQEPAIAAmQHOAQIBmQEBBHAAmgEQAIAAmgHOAQEBmgEBBG8AmwEQAIAAmwHPAQABmwEBBG8AnAEQAIAAnAHQAf4AnAEABHAAnQEQAIAAnQHQAf4AnQEABHAAngEQAIEAngHRAfwAngEABHAAnwERAIAAnwHSAfoAnwEABG8AoAERAIAAoAHSAfoAoAH/A3AAoQERAIAAoQHTAfgAoQH/A3AAogERAIEAogHUAfcAogH/A3AAowESAIAAowHUAfYAowH/A28ApAESAIAApAHVAfQApAH/A28ApQESAIAApQHVAfQApQH+A3AApgESAIEApgHWAfIApgH+A3AApwESAIEApwHXAfEApwH+A3AAqAETAIAAqAHXAfAAqAH+A28AqQETAIEAqQHYAe4AqQH9A3AAqgETAIEAqgHZAe0AqgH9A3AAqwETAIEAqwHZAewAqwH9A3AArAEUAIAArAHaAesArAH9A28ArQEUAIEArQHbAekArQH8A3AArgEUAIEArgHbAegArgH8A3AArwEUAIEArwHcAecArwH8A3AAsAEVAIEAsAHdAeUAsAH8A3AAsQEVAIEAsQHdAeUAsQH7A3AAsgEVAIEAsgHeAeMAsgH7A3AAswEVAIIAswHfAeEAswH7A3AAtAEWAIEAtAHfAeEAtAH7A3AAtQEWAIEAtQHgAd8AtQH6A3AAtgEWAIEAtgHhAd4AtgH6A3AAtwEWAIIAtwHhAd0AtwH6A3AAuAEXAIEAuAHiAdsAuAH5A3EAuQEXAIEAuQHiAdsAuQH5A3AAugEXAIIAugHjAdkAugH5A3AAuwEXAIIAuwHkAdgAuwH5A3AAvAEYAIEAvAHkAdcAvAH4A3EAvQEYAIIAvQHlAdUAvQH4A3AAvgEYAIIAvgHmAdQAvgH4A3AAvwEZAIEAvwHmAdMAvwH3A3EAwAEZAIIAwAHnAdEAwAH3A3EAwQEZAIIAwQHoAdAAwQH3A3AAwgEZAIIAwgHoAc8AwgH3A3AAwwEaAIIAwwHpAc4AwwH2A3EAxAEaAIIAxAHqAcwAxAH2A3EAxQEaAIIAxQHqAcsAxQH2A3AAxgEbAIIAxgHrAcoAxgH1A3EAxwEbAIIAxwHsAcgAxwH1A3EAyAEbAIIAyAHsAcgAyAH1A3AAyQEbAIMAyQHtAcYAyQH1A3AAygEcAIIAygHuAcQAygH0A3EAywEcAIMAywHuAcQAywH0A3EAzAEcAIMAzAHvAcIAzAH0A3AAzQEdAIIAzQHwAcAAzQHzA3EAzgEdAIMAzgHwAcAAzgHzA3EAzwEdAIMAzwHxAb4AzwHzA3AA0AEdAIMA0AHxAb4A0AHyA3EA0QEeAIMA0QHyAbwA0QHyA3EA0gEeAIMA0gHzAboA0gHyA3EA0wEeAIMA0wHzAboA0wHxA3EA1AEfAIMA1AH0AbgA1AHxA3EA1QEfAIMA1QH1AbYA1QHxA3EA1gEfAIQA1gH1AbYA1gHwA3EA1wEgAIMA1wH2AbQA1wHwA3EA2AEgAIMA2AH3AbMA2AHwA3EA2QEgAIQA2QH3AbIA2QHvA3IA2gEhAIMA2gH4AbAA2gHvA3EA2wEhAIQA2wH5Aa8A2wHvA3EA3AEhAIQA3AH5Aa4A3AHuA3IA3QEiAIMA3QH6AawA3QHuA3EA3gEiAIQA3gH7AasA3gHuA3EA3wEiAIQA3wH7AaoA3wHtA3IA4AEjAIQA4AH8AakA4AHtA3EA4QEjAIQA4QH9AacA4QHtA3EA4gEjAIQA4gH9AaYA4gHsA3IA4wEkAIQA4wH+AaUA4wHsA3EA5AEkAIQA5AH+AaQA5AHrA3IA5QEkAIUA5QH/AaIA5QHrA3IA5gElAIQA5gEAAqEA5gHrA3EA5wElAIQA5wEAAqAA5wHqA3IA6AElAIUA6AEBAp4A6AHqA3IA6QEmAIQA6QECAp0A6QHqA3EA6gEmAIUA6gECApwA6gHpA3IA6wEmAIUA6wEDApsA6wHpA3IA7AEnAIUA7AEEApkA7AHoA3IA7QEnAIUA7QEEApgA7QHoA3IA7gEnAIYA7gEFApcA7gHoA3IA7wEoAIUA7wEEApcA7wHnA3IA8AEoAIUA8AEDApcA8AHnA3IA8QEoAIYA8QECApgA8QHnA3IA8gEpAIUA8gECApcA8gHmA3IA8wEpAIYA8wEBApcA8wHmA3IA9AEpAIYA9AEAApgA9AHlA3MA9QEqAIYA9QEAApcA9QHlA3IA9gEqAIYA9gH/AZcA9gHkA3MA9wErAIYA9wH+AZgA9wHkA3MA+AErAIYA+AH9AZgA+AHkA3IA+QErAIcA+QH9AZcA+QHjA3MA+gEsAIYA+gH8AZgA+gHjA3IA+wEsAIcA+wH7AZgA+wHiA3MA/AEsAIcA/AH7AZgA/AHiA3MA/QEtAIcA/QH6AZgA/QHiA3IA/gEtAIcA/gH5AZgA/gHhA3MA/wEuAIcA/wH4AZkA/wHhA3MAAAIuAIcAAAL4AZgAAALgA3MAAQIuAIgAAQL3AZgAAQLgA3MAAgIvAIcAAgL2AZkAAgLfA3MAAwIvAIgAAwL1AZkAAwLfA3MABAIwAIcABAL1AZgABALeA3QABQIwAIgABQL0AZkABQLeA3MABgIwAIgABgLzAZkABgLeA3MABwIxAIgABwLzAZgABwLdA3QACAIxAIgACALyAZkACALdA3MACQIyAIgACQLxAZkACQLcA3QACgIyAIgACgLwAZkACgLcA3MACwIyAIkACwLwAZkACwLbA3QADAIzAIgADALvAZkADALbA3QADQIzAIkADQLuAZkADQLaA3QADgI0AIgADgLtAZsADgLaA3QADwI0AIkADwLtAZwADwLZA3QAEAI1AIkAEALsAZ0AEALZA3QAEQI1AIkAEQLrAZ8AEQLYA3QAEgI1AIoAEgLqAaEAEgLYA3QAEwI2AIkAEwLpAaIAEwLXA3UAFAI2AIoAFALpAaMAFALXA3QAFQI3AIkAFQLoAaUAFQLWA3UAFgI3AIoAFgLnAaYAFgLWA3QAFwI4AIoAFwLmAagAFwLVA3UAGAI4AIoAGALmAakAGALVA3UAGQI4AIsAGQLlAaoAGQLUA3UAGgI5AIoAGgLkAawAGgLUA3UAGwI5AIsAGwLjAa4AGwLTA3UAHAI6AIoAHALiAa8AHALTA3UAHQI6AIsAHQLiAbAAHQLSA3UAHgI7AIsAHgLhAbIAHgLSA3UAHwI7AIsAHwLgAbMAHwLRA3UAIAI8AIsAIALfAbUAIALRA3UAIQI8AIwAIQLeAbcAIQLQA3YAIgI8AIwAIgLeAbcAIgLQA3UAIwI9AIwAIwLdAbkAIwLPA3YAJAI9AIwAJALcAbsAJALOA3YAJQI+AIwAJQLbAbwAJQLOA3YAJgI+AI0AJgLaAb4AJgLNA3YAJwI/AIwAJwLaAb8AJwLNA3YAKAI/AI0AKALZAcAAKALMA3YAKQJAAI0AKQLYAcIAKQLMA3YAKgJAAI0AKgLXAcQAKgLLA3YAKwJBAI0AKwLWAcUAKwLLA3YALAJBAI4ALALVAccALALKA3YALQJCAI4ALQLVAcgALQLJA3cALgJCAI4ALgLUAcoALgLJA3YALwJDAI4ALwLTAcsALwLIA3cAMAJDAI8AMALSAc0AMALIA3cAMQJEAI4AMQLRAc8AMQLHA3cAMgJEAI8AMgLQAdAAMgLGA3gAMwJFAI8AMwLPAdIAMwLGA3cANAJFAI8ANALOAdQANALFA3gANQJGAI8ANQLOAdUANQLEA3gANgJGAJAANgLNAdYANgLEA3gANwJHAJAANwLMAdgANwLDA3gAOAJHAJAAOALLAdoAOALDA3gAOQJIAJAAOQLKAdwAOQLCA3gAOgJIAJEAOgLJAd0AOgLBA3kAOwJJAJEAOwLIAd8AOwLBA3gAPAJJAJEAPALHAeEAPALAA3gAPQJKAJEAPQLGAeMAPQK/A3kAPgJKAJIAPgLFAeQAPgK/A3gAPwJLAJIAPwLEAeYAPwK+A3kAQAJLAJMAQALDAegAQAK9A3kAQQJMAJIAQQLCAeoAQQK9A3kAQgJMAJMAQgLBAesAQgK8A3kAQwJNAJMAQwLAAe0AQwK7A3oARAJOAJMARAK/Ae8ARAK6A3oARQJOAJQARQK+AfEARQK6A3oARgJPAJQARgK9AfMARgK5A3oARwJPAJQARwK8AfQARwK4A3sASAJQAJQASAK7AfYASAK4A3oASQJQAJUASQK6AfgASQK3A3sASgJRAJUASgK5AfoASgK2A3sASwJRAJYASwK4AfsASwK1A3sATAJSAJYATAK3Af0ATAK1A3sATQJTAJYATQK2Af8ATQK0A3sATgJTAJcATgK1AQEBTgKzA3wATwJUAJcATwK0AQMBTwKyA3wAUAJUAJgAUAKzAQUBUAKyA3wAUQJVAJgAUQKyAQYBUQKxA3wAUgJVAJgAUgKxAQgBUgKwA3wAUwJWAJgAUwKwAQoBUwKvA30AVAJXAJgAVAKvAQwBVAKuA30AVQJXAJkAVQKuAQ4BVQKuA30AVgJYAJkAVgKsAREBVgKtA30AVwJYAJsAVwKrARMBVwKsA34AWAJZAJsAWAKqARQBWAKrA34AWQJaAJsAWQKpARYBWQKqA34AWgJaAJwAWgKoARgBWgKpA38AWwJbAJwAWwKnARoBWwKoA38AXAJbAJ0AXAKlAakAXAJQAnIAXAKoA38AXQJcAJ0AXQKkAakAXQJQAnMAXQKnA38AXgJdAJ0AXgKjAakAXgJRAnMAXgKmA38AXwJdAJ4AXwKhAaoAXwJSAnMAXwKlA4AAYAJeAJ8AYAKgAasAYAJTAnMAYAKkA4AAYQJfAJ8AYQKfAasAYQJTAnQAYQKjA4AAYgJfAKAAYgKdAawAYgJUAnQAYgKiA4EAYwJgAKAAYwKcAawAYwJVAnMAYwKhA4EAZAJgAKIAZAKbAawAZAJWAnMAZAKgA4IAZQJhAKIAZQKZAa4AZQJXAnMAZQKfA4IAZgJiAKIAZgKYAa4AZgJXAnQAZgKeA4IAZwJiAKQAZwKWAa8AZwJYAnQAZwKdA4MAaAJjAKQAaAKVAa8AaAJZAnQAaAKcA4MAaQJkAKQAaQKTAbAAaQJaAnQAaQKbA4MAagJkAKYAagKRAbEAagJaAnUAagKaA4QAawJlAKYAawKQAbIAawJbAnUAawKZA4QAbAJmAKcAbAKOAbMAbAJcAnUAbAKYA4QAbQJmAKkAbQKMAbQAbQJdAnYAbQKXA4UAbgJnAKkAbgKLAbQAbgJdAncAbgKWA4UAbwJoAKoAbwKJAbUAbwJeAncAbwKVA4UAcAJoAKwAcAKHAbYAcAJfAncAcAKUA4YAcQJpAKwAcQKFAbgAcQJgAncAcQKTA4YAcgJqAK0AcgKDAbkAcgJhAncAcgKSA4YAcwJrAK4AcwKAAbsAcwJhAngAcwKQA4gAdAJrALAAdAJ+AbwAdAJiAngAdAKPA4gAdQJsALIAdQJ8Ab0AdQJjAngAdQKOA4gAdgJtALMAdgJ5Ab8AdgJkAnkAdgKNA4kAdwJtALUAdwJ2AcIAdwJlAnkAdwKMA4kAeAJuALcAeAJzAcQAeAJlAnoAeAKKA4oAeQJvALkAeQJwAcYAeQJmAnoAeQKJA4oAegJvALwAegJtAcgAegJnAnoAegKIA4sAewJwAL4AewJpAcsAewJoAnsAewKGA4wAfAJxAMEAfAJkAc8AfAJpAnsAfAKFA4wAfQJyAMUAfQJeAdQAfQJpAnwAfQKEA40AfgJyAMwAfgJWAdsAfgJqAn0AfgKCA44AfwJzAL4BfwJrAn0AfwKBA44AgAJ0ALwBgAJsAn0AgAJ/A48AgQJ1ALoBgQJtAn4AgQJ+A5AAggJ1ALkBggJuAn4AggJ8A5EAgwJ2ALcBgwJuAoAAgwJ7A5EAhAJ3ALUBhAJvAoAAhAJ5A5IAhQJ4ALMBhQJwAoEAhQJ4A5MAhgJ5ALEBhgJxAoEAhgJ2A5QAhwJ5ALABhwJyAoIAhwJ0A5UAiAJ6AK4BiAJzAoMAiAJyA5YAiQJ7AK0BiQJzAoQAiQJwA5gAigJ8AKsBigJ0AoUAigJvA5gAiwJ9AKkBiwJ1AoYAiwJtA5kAjAJ9AKgBjAJ2AocAjAJqA5sAjQJ+AKYBjQJ3AogAjQJoA5wAjgJ/AKQBjgJ4AokAjgJmA54AjwKAAKIBjwJ5AooAjwJkA58AkAKBAKABkAJ6AowAkAJhA6EAkQKBAJ8BkQJ6Ao4AkQJfA6IAkgKCAJ0BkgJ7ApAAkgJcA6QAkwKDAJsBkwJ8ApIAkwJZA6YAlAKEAJkBlAJ9ApQAlAJWA6kAlQKFAJcBlQJ+ApYAlQJSA6wAlgKGAJUBlgJ/ApkAlgJOA68AlwKHAJMBlwKAAp0AlwJJA7MAmAKHAJIBmAKBAqIAmAJDA7gAmQKIAJABmQKCAq0AmQI2A8QAmgKJAI4BmgKDAnYBmwKKAIwBmwKDAnYBnAKLAIoBnAKEAnQBnQKMAIgBnQKFAnIBngKNAIYBngKGAnABnwKOAIQBnwKHAm4BoAKPAIIBoAKIAmwBoQKQAIABoQKJAmoBogKRAH4BogKKAmgBowKSAHwBowKLAmYBpAKTAHoBpAKMAmQBpQKTAHkBpQKNAmIBpgKUAHcBpgKOAmABpwKVAHUBpwKPAl8BqAKWAHMBqAKQAl0BqQKXAHEBqQKRAlsBqgKYAG8BqgKSAlkBqwKZAG0BqwKTAlcBrAKaAGsBrAKUAlUBrQKbAGkBrQKVAlMBrgKcAGYBrgKWAlEBrwKeAGMBrwKXAk8BsAKfAGEBsAKYAk0BsQKgAF8BsQKZAkoBsgKhAF0BsgKaAkgBswKiAFsBswKbAkYBtAKjAFkBtAKcAkQBtQKkAFcBtQKdAkIBtgKlAFQBtgKeAkABtwKmAFIBtwKgAj0BuAKnAFABuAKhAjsBuQKoAE4BuQKiAjkBugKqAEsBugKjAjcBuwKrAEgBuwKkAjUBvAKsAEYBvAKlAjIBvQKtAEQBvQKmAjABvgKuAEIBvgKnAi4BvwKvAEABvwKpAisBwAKxADwBwAKqAikBwQKyADoBwQKrAiYBwgKzADgBwgKsAiQBwwK0ADUBwwKtAiIBxAK2ADIBxAKvAh8BxQK3ADABxQKwAhwBxgK4AC4BxgKxAhoBxwK6ACoBxwKyAhgByAK7ACgByAK0AhUByQK8ACUByQK1AhIBygK+ACIBygK2AhABywK/ACABywK3Ag4BzALAAB0BzAK5AgoBzQLCABoBzQK6AggBzgLDABcBzgK7AgUBzwLFABQBzwK9AgIB0ALGABEB0AK+AgAB0QLHAA8B0QLAAvwA0gLJAAsB0gLBAvoA0wLKAAkB0wLDAvYA1ALMAAUB1ALEAvQA1QLOAAIB1QLFAvEA1gLPAP8A1gLHAu4A1wLRAPsA1wLIAusA2ALSAPkA2ALKAucA2QLUAPUA2QLMAuQA2gLWAPEA2gLNAuEA2wLXAO8A2wLPAt0A3ALZAOsA3ALQAtsA3QLbAOcA3QLSAtcA3gLdAOMA3gLUAtMA3wLfAN8A3wLVAtAA4ALgAN0A4ALXAswA4QLiANkA4QLZAsgA4gLkANUA4gLbAsUA4wLmANEA4wLdAsEA5ALoAM0A5ALfAr0A5QLqAMgA5QLgArkA5gLsAMQA5gLiArUA5wLvAL8A5wLkArEA6ALxALsA6ALnAqwA6QLzALYA6QLpAqgA6gL2ALEA6gLrAqMA6wL4AKwA6wLtAp8A7AL7AKcA7ALvApoA7QL9AKIA7QLyApUA7gIAAZwA7gL0ApAA7wIDAZYA7wL3AooA8AIGAZAA8AL6AoQA8QIJAYoA8QL8An8A8gIMAYQA8gL/AnkA8wIPAX0A8wICA3MA9AITAXYA9AIGA2sA9QIXAW4A9QIJA2QA9gIbAWUA9gINA1wA9wIgAVsA9wIRA1MA+AIlAVEA+AIWA0kA+QIrAUQA+QIbAz4A+gIyATYA+gIiAzAA+wI9AR8A+wIrAxwA" };
+let _metaRuns = null;
+function metaRuns() {
+  if (_metaRuns) return _metaRuns;
+  const bin = atob(META_LOGO.b64), bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  const r = new Uint16Array(bytes.buffer);
+  const nr = r.length / 3, cum = new Float64Array(nr);
+  let acc = 0;
+  for (let i = 0; i < nr; i++) { acc += r[3 * i + 2]; cum[i] = acc; }
+  _metaRuns = { r, cum, nr };
+  return _metaRuns;
+}
+function genMetaLogo(n, k, d, seed) {
+  const rng = mulberry32(seed), { r, cum, nr } = metaRuns(), total = cum[nr - 1];
+  const s = 2 / META_LOGO.nx, rows = new Array(n);
+  for (let p = 0; p < n; p++) {
+    const u = rng() * total;
+    let lo = 0, hi = nr - 1;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (cum[mid] > u) hi = mid; else lo = mid + 1; }
+    const x = r[3 * lo + 1] + (u - (cum[lo] - r[3 * lo + 2]));
+    const y = r[3 * lo] + rng();
+    rows[p] = [x * s - 1, (y - META_LOGO.ny / 2) * s];
+  }
+  return padRows(rng, rows, 2, d);
+}
+function genHeart(n, k, d, seed) {
+  const rng = mulberry32(seed);
+  const rows = rejection(n, rng, () => [rng() * 3 - 1.5, rng() * 3 - 1.3],
+    ([x, y]) => Math.pow(x * x + y * y - 1, 3) - x * x * y * y * y <= 0);
+  return padRows(rng, rows, 2, d);
+}
+function genStar(n, k, d, seed) {
+  const rng = mulberry32(seed), v = [];
+  for (let i = 0; i < 10; i++) { const a = Math.PI / 2 + i * Math.PI / 5, r = i % 2 === 0 ? 1 : 0.4; v.push([r * Math.cos(a), r * Math.sin(a)]); }
+  const rows = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const e = Math.floor(rng() * 10), t = rng(), a = v[e], b = v[(e + 1) % 10];
+    rows[i] = [a[0] * (1 - t) + b[0] * t + gaussian(rng) * 0.015, a[1] * (1 - t) + b[1] * t + gaussian(rng) * 0.015];
+  }
+  return padRows(rng, rows, 2, d);
+}
+function genCheckerboard(n, k, d, seed) {
+  const rng = mulberry32(seed);
+  const rows = rejection(n, rng, () => [rng() * 8, rng() * 8],
+    ([x, y]) => (Math.floor(x) + Math.floor(y)) % 2 === 0);
+  return padRows(rng, rows, 2, d);
+}
+function genSierpinski(n, k, d, seed) {
+  const rng = mulberry32(seed), v = [[0, 0], [1, 0], [0.5, Math.sqrt(3) / 2]];
+  let p = [rng(), rng()];
+  const rows = [];
+  for (let i = 0; i < n + 50; i++) {
+    const c = v[Math.floor(rng() * 3)];
+    p = [(p[0] + c[0]) / 2, (p[1] + c[1]) / 2];
+    if (i >= 50) rows.push(p);
+  }
+  return padRows(rng, rows, 2, d);
+}
+function genOlympicRings(n, k, d, seed) {
+  const rng = mulberry32(seed), c = [[-2.2, 0], [0, 0], [2.2, 0], [-1.1, -1], [1.1, -1]], rows = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const r = c[Math.floor(rng() * 5)], t = rng() * 2 * Math.PI;
+    rows[i] = [r[0] + Math.cos(t) + gaussian(rng) * 0.04, r[1] + Math.sin(t) + gaussian(rng) * 0.04];
+  }
+  return padRows(rng, rows, 2, d);
+}
+function genLissajous(n, k, d, seed) {
+  const rng = mulberry32(seed), rows = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = rng() * 2 * Math.PI;
+    rows[i] = [Math.sin(3 * t + Math.PI / 2) + gaussian(rng) * 0.02, Math.sin(2 * t) + gaussian(rng) * 0.02];
+  }
+  return padRows(rng, rows, 2, d);
+}
+function genGalaxy(n, k, d, seed) {
+  const rng = mulberry32(seed), c = splitCounts(n, [3, 7]), rows = [];
+  for (let i = 0; i < c[0]; i++) rows.push([gaussian(rng) * 0.15, gaussian(rng) * 0.15]);
+  for (let i = 0; i < c[1]; i++) {
+    const t = rng() * 2.5 * Math.PI, r = 0.15 * Math.exp(0.25 * t), a = t + Math.floor(rng() * 2) * Math.PI;
+    const s = 0.03 + 0.04 * r;
+    rows.push([r * Math.cos(a) + gaussian(rng) * s, r * Math.sin(a) + gaussian(rng) * s]);
+  }
+  return padRows(rng, rows, 2, d);
+}
+function genFlower(n, k, d, seed) {
+  const rng = mulberry32(seed);
+  const rows = rejection(n, rng, () => [rng() * 2 - 1, rng() * 2 - 1],
+    ([x, y]) => Math.hypot(x, y) <= Math.abs(Math.cos(5 * Math.atan2(y, x) / 2)));
+  return padRows(rng, rows, 2, d);
+}
+
+const GENERATORS = {
+  gaussian_blobs: genGaussianBlobs,
+  gaussian_blobs_close: genGaussianBlobsClose,
+  anisotropic_blobs: genAnisotropicBlobs,
+  uniform_cubes: genUniformCubes,
+  moons_tiled: genMoonsTiled,
+  rings: genRings,
+  duplicate_heavy: genDuplicateHeavy,
+  syn_unif_cube: genSynUnifCube,
+  syn_gauss_iso: genSynGaussPow(0),
+  syn_gauss_pow_a05: genSynGaussPow(0.5),
+  syn_gauss_pow_a1: genSynGaussPow(1),
+  syn_gauss_pow_a2: genSynGaussPow(2),
+  syn_gmm: genSynGmm(0),
+  syn_gmm_zipf: genSynGmm(1),
+  vo_toy: genVoToy,
+  spirals: genSpirals,
+  meta_logo: genMetaLogo,
+  heart: genHeart,
+  star: genStar,
+  checkerboard: genCheckerboard,
+  sierpinski: genSierpinski,
+  olympic_rings: genOlympicRings,
+  lissajous: genLissajous,
+  galaxy: genGalaxy,
+  flower: genFlower,
+};
+
+function flattenRows(rows) {
+  const n = rows.length, d = rows[0].length;
+  const flat = new Float64Array(n * d);
+  for (let i = 0, off = 0; i < n; i++, off += d) {
+    const r = rows[i];
+    for (let t = 0; t < d; t++) flat[off + t] = r[t];
+  }
+  return flat;
+}
+function rowsFromFlat(flat, n, d) {
+  const rows = new Array(n);
+  for (let i = 0, off = 0; i < n; i++, off += d) rows[i] = Array.from(flat.subarray(off, off + d));
+  return rows;
+}
+
+const _bfF = new Float32Array(1), _bfU = new Uint32Array(_bfF.buffer);
+function bf16(v) {
+  _bfF[0] = v;
+  const u = _bfU[0];
+  _bfU[0] = ((u + 0x7FFF + ((u >>> 16) & 1)) >>> 0) & 0xFFFF0000;
+  return _bfF[0];
+}
+function roundBf16(src) {
+  const out = new Float64Array(src.length);
+  for (let i = 0; i < src.length; i++) out[i] = bf16(src[i]);
+  return out;
+}
+
+function prepBf16Centroids(Cflat, K, d) {
+  const Cr = roundBf16(Cflat);
+  const cn = new Float64Array(K);
+  for (let j = 0, off = 0; j < K; j++, off += d) {
+    let s = 0;
+    for (let t = 0; t < d; t++) s = Math.fround(s + Math.fround(Cr[off + t] * Cr[off + t]));
+    cn[j] = s;
+  }
+  return { Cr, cn };
+}
+function assignIndexBf16(Xr, xOff, Cr, cn, K, d) {
+  let best = 0, bestKey = Infinity;
+  for (let j = 0, cOff = 0; j < K; j++, cOff += d) {
+    let dot = 0;
+    for (let t = 0; t < d; t++) dot = Math.fround(dot + Math.fround(Xr[xOff + t] * Cr[cOff + t]));
+    const key = Math.fround(cn[j] - 2 * dot);
+    if (key < bestKey) { bestKey = key; best = j; }
+  }
+  return best;
+}
+
+function trainAssignFlat(Xflat, Xr, n, Cflat, K, d, codesOut) {
+  if (!Xr) return fullAssignFlat(Xflat, n, Cflat, K, d, codesOut).codes;
+  const codes = codesOut || new Int32Array(n);
+  const { Cr, cn } = prepBf16Centroids(Cflat, K, d);
+  for (let i = 0, off = 0; i < n; i++, off += d) codes[i] = assignIndexBf16(Xr, off, Cr, cn, K, d);
+  return codes;
+}
+
+let _lastAssignDist = 0;
+function assignIndexFlat(Xflat, xOff, Cflat, K, d) {
+  let best = 0, bestDist = Infinity;
+
+  if (d === 2) {
+    const x0 = Xflat[xOff], x1 = Xflat[xOff + 1];
+    for (let j = 0, cOff = 0; j < K; j++, cOff += 2) {
+      const diff0 = x0 - Cflat[cOff], diff1 = x1 - Cflat[cOff + 1];
+      const s = diff0 * diff0 + diff1 * diff1;
+      if (s < bestDist) { bestDist = s; best = j; }
+    }
+  } else {
+    for (let j = 0, cOff = 0; j < K; j++, cOff += d) {
+      let s = 0;
+      for (let t = 0; t < d; t++) {
+        const diff = Xflat[xOff + t] - Cflat[cOff + t];
+        s += diff * diff;
+      }
+      if (s < bestDist) { bestDist = s; best = j; }
+    }
+  }
+  _lastAssignDist = bestDist;
+  return best;
+}
+
+function fullAssignFlat(Xflat, n, Cflat, K, d, codesOut) {
+  const codes = codesOut || new Int32Array(n);
+  let totalSq = 0;
+  for (let i = 0, off = 0; i < n; i++, off += d) {
+    const j = assignIndexFlat(Xflat, off, Cflat, K, d);
+    codes[i] = j;
+    totalSq += _lastAssignDist;
+  }
+  return { codes, loss: totalSq / n };
+}
+
+function fullAssign(X, C, K, d) {
+  return fullAssignFlat(flattenRows(X), X.length, flattenRows(C), K, d);
+}
+
+// Phones and tablets (a finger as the main pointer) run at most 4 threads at once: a phone that reports 8 cores
+// usually has about 4 fast ones, and fewer threads keep the replay smooth and the tab's memory lower (measured on
+// an emulated 4-core phone: 95th-percentile frame gap 17 ms instead of 33, peak 72 MB lower). No result depends
+// on the number of threads; on a touch device with many fast cores, training is slower.
+const TOUCH_DEVICE = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const THREAD_CAP = TOUCH_DEVICE ? 4 : Infinity;
+// the layouts in which the plots start below the screen (same queries as in the stylesheet)
+const PHONE_LAYOUT = typeof matchMedia === "function" ? matchMedia("(max-width: 600px), "
+  + "(orientation: landscape) and (min-width: 601px) and (max-height: 500px) and (pointer: coarse)") : null;
+const PARALLEL_WORK_THRESHOLD = 2000000;
+const _workerSrc = `
+self.onmessage = function (e) {
+  const msg = e.data;
+  if (msg.type === "init") {
+    self._X = new Float64Array(msg.X);
+    self._start = msg.start;
+    self._len = msg.len;
+    self._d = msg.d;
+    self._blocks = msg.blocks;
+  } else if (msg.type === "score" && msg.bf16) {
+
+    const C = new Float64Array(msg.C);
+    const K = msg.K, d = self._d, X = self._X, len = self._len;
+    const F = new Float32Array(1), U = new Uint32Array(F.buffer);
+    const bf = (v) => { F[0] = v; const u = U[0]; U[0] = ((u + 0x7FFF + ((u >>> 16) & 1)) >>> 0) & 0xFFFF0000; return F[0]; };
+    if (!self._Xr) { self._Xr = new Float64Array(X.length); for (let i = 0; i < X.length; i++) self._Xr[i] = bf(X[i]); }
+    const Xr = self._Xr;
+    const Cr = new Float64Array(C.length);
+    for (let i = 0; i < C.length; i++) Cr[i] = bf(C[i]);
+    const cn = new Float64Array(K);
+    for (let j = 0, off = 0; j < K; j++, off += d) {
+      let s = 0;
+      for (let t = 0; t < d; t++) s = Math.fround(s + Math.fround(Cr[off + t] * Cr[off + t]));
+      cn[j] = s;
+    }
+    const codes = new Int32Array(len), sums = [];
+    let totalSq = 0, b = 0, left = self._blocks[0];
+    for (let i = 0, xOff = 0; i < len; i++, xOff += d) {
+      let best = 0, bestKey = Infinity;
+      for (let j = 0, cOff = 0; j < K; j++, cOff += d) {
+        let dot = 0;
+        for (let t = 0; t < d; t++) dot = Math.fround(dot + Math.fround(Xr[xOff + t] * Cr[cOff + t]));
+        const key = Math.fround(cn[j] - 2 * dot);
+        if (key < bestKey) { bestKey = key; best = j; }
+      }
+      codes[i] = best;
+      let s = 0;
+      for (let t = 0, cOff = best * d; t < d; t++) { const diff = X[xOff + t] - C[cOff + t]; s += diff * diff; }
+      totalSq += s;
+      if (--left === 0) { sums.push(totalSq); totalSq = 0; left = self._blocks[++b]; }
+    }
+    self.postMessage({ codes, sums, start: self._start }, [codes.buffer]);
+  } else if (msg.type === "score") {
+    const C = new Float64Array(msg.C);
+    const K = msg.K, d = self._d, X = self._X, len = self._len;
+    const codes = new Int32Array(len), sums = [];
+    let totalSq = 0, b = 0, left = self._blocks[0];
+
+    for (let i = 0, xOff = 0; i < len; i++, xOff += d) {
+      let best = 0, bestDist = Infinity;
+      if (d === 2) {
+        const x0 = X[xOff], x1 = X[xOff + 1];
+        for (let j = 0, cOff = 0; j < K; j++, cOff += 2) {
+          const d0 = x0 - C[cOff], d1 = x1 - C[cOff + 1];
+          const s = d0 * d0 + d1 * d1;
+          if (s < bestDist) { bestDist = s; best = j; }
+        }
+      } else {
+        for (let j = 0, cOff = 0; j < K; j++, cOff += d) {
+          let s = 0;
+          for (let t = 0; t < d; t++) { const diff = X[xOff + t] - C[cOff + t]; s += diff * diff; }
+          if (s < bestDist) { bestDist = s; best = j; }
+        }
+      }
+      codes[i] = best;
+      totalSq += bestDist;
+      if (--left === 0) { sums.push(totalSq); totalSq = 0; left = self._blocks[++b]; }
+    }
+    self.postMessage({ codes, sums, start: self._start }, [codes.buffer]);
+  }
+};
+`;
+let _workerBlobUrl = null;
+function _workerUrl() {
+  if (!_workerBlobUrl) {
+    _workerBlobUrl = URL.createObjectURL(new Blob([_workerSrc], { type: "application/javascript" }));
+  }
+  return _workerBlobUrl;
+}
+// The loss is a sum over the rows, added up in a fixed set of blocks (the split an 8-thread computer used: at
+// most 8 blocks of at least 2,000 rows), block after block in row order, however many threads do the work.
+// So the last digits of the loss are the same on every device, whatever number of cores it reports.
+const SCORE_BLOCKS = 8;
+class ParallelAssigner {
+  constructor(Xflat, n, d, numWorkers) {
+    this.n = n;
+    const hw = Math.min((typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 4, THREAD_CAP);
+    const nBlocks = Math.max(1, Math.min(SCORE_BLOCKS, Math.floor(n / 2000) || 1));
+    const size = Math.ceil(n / nBlocks), blocks = [];
+    for (let s = 0; s < n; s += size) blocks.push(Math.min(size, n - s));
+    this.numWorkers = Math.max(1, Math.min(numWorkers || hw, blocks.length));
+    this.workers = [];
+    this.ranges = [];
+    let start = 0;
+    const url = _workerUrl();
+    // each worker scores a run of consecutive blocks
+    for (let w = 0; w < this.numWorkers; w++) {
+      const lens = blocks.slice(Math.floor(w * blocks.length / this.numWorkers),
+                                Math.floor((w + 1) * blocks.length / this.numWorkers));
+      const len = lens.reduce((a, b) => a + b, 0);
+      const worker = new Worker(url);
+      const slice = Xflat.slice(start * d, (start + len) * d);
+      worker.postMessage({ type: "init", X: slice.buffer, start, len, d, blocks: lens }, [slice.buffer]);
+      this.workers.push(worker);
+      this.ranges.push({ start, len });
+      start += len;
+    }
+  }
+
+  score(Cflat, K, codesOut, useBf16) {
+    const codes = codesOut || new Int32Array(this.n);
+    const promises = this.workers.map(worker => new Promise((resolve, reject) => {
+      worker.onmessage = (e) => resolve(e.data);
+      // a worker that throws must fail the run, not leave it waiting forever
+      worker.onerror = (e) => { e.preventDefault(); reject(new Error("scoring worker failed: " + (e.message || "unknown error"))); };
+      worker.onmessageerror = () => reject(new Error("scoring worker sent an unreadable message"));
+      const Ccopy = Cflat.slice();
+      worker.postMessage({ type: "score", C: Ccopy.buffer, K, bf16: !!useBf16 },
+                         [Ccopy.buffer]);
+    }));
+    return Promise.all(promises).then(results => {
+      let totalSq = 0;
+      for (const r of results) {
+        codes.set(r.codes, r.start);
+        for (const s of r.sums) totalSq += s;
+      }
+      return { codes, loss: totalSq / this.n };
+    });
+  }
+  terminate() {
+    for (const w of this.workers) w.terminate();
+    this.workers = [];
+  }
+}
+
+function fullAssignMaybeParallel(assigner, Xflat, n, Cflat, K, d, codesOut) {
+  if (assigner) return assigner.score(Cflat, K, codesOut);
+  return Promise.resolve(fullAssignFlat(Xflat, n, Cflat, K, d, codesOut));
+}
+
+function trainAssignMaybeParallel(assigner, Xflat, Xr, n, Cflat, K, d, codesOut) {
+  if (assigner) return assigner.score(Cflat, K, codesOut, !!Xr).then(r => r.codes);
+  return Promise.resolve(trainAssignFlat(Xflat, Xr, n, Cflat, K, d, codesOut));
+}
+function makeAssignerIfWorthIt(Xflat, n, d, K) {
+  if (typeof Worker === "undefined") return null;
+  if (n * K < PARALLEL_WORK_THRESHOLD) return null;
+  return new ParallelAssigner(Xflat, n, d);
+}
+
+const TRAIN_THREADS_MAX = Math.max(1, Math.min(((typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 2) - 1, 8, THREAD_CAP - 1));
+function trainThreads() {
+  const q = parseInt(new URLSearchParams(typeof location !== "undefined" ? location.search : "").get("threads"), 10);
+  return Number.isFinite(q) && q >= 1 ? Math.min(q, TRAIN_THREADS_MAX) : TRAIN_THREADS_MAX;
+}
+
+const EMA_POOL_MIN_WORK = 60000;
+// With one training thread the pool cannot split a batch, but it still takes a big e-means step off the main
+// thread: above this batch x k a step there costs over ~35 ms (two frames), and the hand-off ~3%.
+const EMA_POOL_SOLO_WORK = 4e6;
+const _trainWorkerSrc = `
+let Xr = null, d = 0, perm = null;
+const F = new Float32Array(1), U = new Uint32Array(F.buffer);
+const bf = v => { F[0] = v; const u = U[0]; U[0] = ((u + 0x7FFF + ((u >>> 16) & 1)) >>> 0) & 0xFFFF0000; return F[0]; };
+self.onmessage = e => {
+  const m = e.data;
+  if (m.type === "init") { Xr = new Float32Array(m.Xr); d = m.d; return; }
+  if (m.type === "perm") { perm = new Int32Array(m.perm); return; }
+  const C = new Float64Array(m.C), K = m.K;
+  const Cr = new Float64Array(C.length);
+  for (let i = 0; i < C.length; i++) Cr[i] = bf(C[i]);
+  const cn = new Float64Array(K);
+  for (let j = 0, off = 0; j < K; j++, off += d) {
+    let s = 0;
+    for (let t = 0; t < d; t++) s = Math.fround(s + Math.fround(Cr[off + t] * Cr[off + t]));
+    cn[j] = s;
+  }
+  const len = m.b - m.a, codes = new Int32Array(len);
+  for (let i = 0; i < len; i++) {
+    const xOff = (m.usePerm ? perm[m.a + i] : m.a + i) * d;
+    let best = 0, bestKey = Infinity;
+    for (let j = 0, cOff = 0; j < K; j++, cOff += d) {
+      let dot = 0;
+      for (let t = 0; t < d; t++) dot = Math.fround(dot + Math.fround(Xr[xOff + t] * Cr[cOff + t]));
+      const key = Math.fround(cn[j] - 2 * dot);
+      if (key < bestKey) { bestKey = key; best = j; }
+    }
+    codes[i] = best;
+  }
+  self.postMessage({ codes, a: m.a }, [codes.buffer]);
+};`;
+class TrainPool {
+  constructor(XrF32, d, N) {
+    this.N = N;
+    this.workers = [];
+    const url = URL.createObjectURL(new Blob([_trainWorkerSrc], { type: "application/javascript" }));
+    for (let w = 0; w < N; w++) {
+      const wk = new Worker(url), copy = XrF32.slice();
+      wk.postMessage({ type: "init", Xr: copy.buffer, d }, [copy.buffer]);
+      this.workers.push(wk);
+    }
+  }
+  setPerm(perm) {
+    const p = Int32Array.from(perm);
+    for (const w of this.workers) { const c = p.slice(); w.postMessage({ type: "perm", perm: c.buffer }, [c.buffer]); }
+  }
+
+  assign(C, K, a, b, usePerm, codesOut) {
+    const chunk = Math.ceil((b - a) / this.N), jobs = [];
+    this.workers.forEach((w, i) => {
+      const s = a + i * chunk, e = Math.min(b, s + chunk);
+      if (s >= e) return;
+      jobs.push(new Promise((res, rej) => {
+        w.onmessage = ev => res(ev.data);
+        w.onerror = ev => { ev.preventDefault(); rej(new Error("training worker failed: " + (ev.message || "unknown error"))); };
+        w.onmessageerror = () => rej(new Error("training worker sent an unreadable message"));
+        const Cc = C.slice();
+        w.postMessage({ type: "assign", C: Cc.buffer, K, a: s, b: e, usePerm }, [Cc.buffer]);
+      }));
+    });
+    return Promise.all(jobs).then(rs => { for (const r of rs) codesOut.set(r.codes, r.a - a); return codesOut; });
+  }
+  terminate() { for (const w of this.workers) w.terminate(); this.workers = []; }
+}
+
+window.__trainPoolBench = async function (n, K, B, N, reps) {
+  const X = flattenRows(GENERATORS.gaussian_blobs(n, K, 2, 3));
+  const Xr = roundBf16(X), C = new Float64Array(K * 2);
+  for (let i = 0; i < K * 2; i++) C[i] = X[(i * 7919) % X.length];
+  const pool = new TrainPool(Float32Array.from(Xr), 2, N), perm = shuffledIndices(mulberry32(5), n);
+  pool.setPerm(perm);
+  const out = new Int32Array(B);
+  await pool.assign(C, K, 0, B, true, out);
+  let t0 = performance.now();
+  for (let r = 0; r < reps; r++) await pool.assign(C, K, (r * B) % (n - B), (r * B) % (n - B) + B, true, out);
+  const poolMs = (performance.now() - t0) / reps;
+  t0 = performance.now();
+  for (let r = 0; r < reps; r++) {
+    const { Cr, cn } = prepBf16Centroids(C, K, 2), off = (r * B) % (n - B);
+    for (let i = 0; i < B; i++) out[i] = assignIndexBf16(Xr, perm[off + i] * 2, Cr, cn, K, 2);
+  }
+  const oneMs = (performance.now() - t0) / reps;
+  pool.terminate();
+  return { B, K, work: B * K, poolMs: +poolMs.toFixed(3), oneMs: +oneMs.toFixed(3) };
+};
+
+window.__trainPoolCheck = async function (n, K, N) {
+  const X = flattenRows(GENERATORS.gaussian_blobs(n, K, 2, 3));
+  for (let i = 0; i < X.length; i++) X[i] = Math.fround(X[i]);
+  const Xr = roundBf16(X), C = new Float64Array(K * 2);
+  for (let i = 0; i < K * 2; i++) C[i] = Math.fround(X[(i * 7919) % X.length]);
+  const pool = new TrainPool(Float32Array.from(Xr), 2, N);
+  const perm = shuffledIndices(mulberry32(5), n);
+  pool.setPerm(perm);
+  const { Cr, cn } = prepBf16Centroids(C, K, 2);
+  const a = Math.floor(n / 7), b = a + Math.floor(n / 3);
+  const rowCodes = await pool.assign(C, K, 0, n, false, new Int32Array(n));
+  const permCodes = await pool.assign(C, K, a, b, true, new Int32Array(b - a));
+  pool.terminate();
+  let bad = 0;
+  for (let i = 0; i < n; i++) if (rowCodes[i] !== assignIndexBf16(Xr, i * 2, Cr, cn, K, 2)) bad++;
+  for (let i = a; i < b; i++) if (permCodes[i - a] !== assignIndexBf16(Xr, perm[i] * 2, Cr, cn, K, 2)) bad++;
+  return { checked: n + (b - a), mismatches: bad, threads: N };
+};
+
+const EMA_EPS = 1e-5;
+const INIT_USAGE = Math.pow(2, -16);
+const SPLIT_EPS = 1e-4;
+const ALPHA_MIN_FRAC = 0.1;
+
+function valleyBatch(K, T, n) {
+  const b = 0.00439175 * Math.pow(K, 0.134749) * Math.pow(n, 0.876473) * Math.pow(T, 0.813344);
+  const lo = Math.pow(2, Math.floor(Math.log2(Math.max(1, b))));
+  const hi = lo * 2;
+  const b2 = (b / lo) < (hi / b) ? lo : hi;
+  return Math.min(b2, Math.floor(n / 2));
+}
+
+function peakStep(B, K, T, n) {
+  const a0 = 0.8244 * Math.pow(K, -0.4617) * Math.pow(B, 0.9003) * Math.pow(n, -0.4498) * Math.pow(T, -0.1057);
+  return Math.min(Math.max(a0, 1e-4), 1.0);
+}
+
+class EmaCodebook {
+  constructor(Xflat, n, K, d, seed) {
+    this.K = K; this.d = d;
+    this.C = new Float64Array(K * d);
+    this.N = new Float64Array(K);
+    this.rng = mulberry32(seed);
+    const idx = choiceNoReplace(this.rng, n, K);
+    for (let j = 0; j < K; j++) {
+      for (let t = 0; t < d; t++) this.C[j * d + t] = Xflat[idx[j] * d + t];
+      this.N[j] = INIT_USAGE;
+    }
+    this.cnt = new Float64Array(K);
+    this.sum = new Float64Array(K * d);
+    this.splits = 0;
+  }
+
+  collect(Xflat, Xr, perm, off, len, codesOut) {
+    const { K, d, C, cnt, sum } = this;
+    cnt.fill(0); sum.fill(0);
+    const prep = Xr ? prepBf16Centroids(C, K, d) : null;
+    for (let i = 0; i < len; i++) {
+      const xi = perm ? perm[off + i] : off + i;
+      const xOff = xi * d;
+      const j = Xr ? assignIndexBf16(Xr, xOff, prep.Cr, prep.cn, K, d)
+                   : assignIndexFlat(Xflat, xOff, C, K, d);
+      if (codesOut) codesOut[xi] = j;
+      cnt[j]++;
+      for (let t = 0; t < d; t++) sum[j * d + t] += Xflat[xOff + t];
+    }
+  }
+  collectFromCodes(Xflat, perm, off, len, codes) {
+    const { d, cnt, sum } = this;
+    cnt.fill(0); sum.fill(0);
+    for (let i = 0; i < len; i++) {
+      const xOff = (perm ? perm[off + i] : off + i) * d, j = codes[i];
+      cnt[j]++;
+      for (let t = 0; t < d; t++) sum[j * d + t] += Xflat[xOff + t];
+    }
+  }
+  blend(decay) {
+    const { K, d, C, N, cnt, sum } = this;
+    const a = 1 - decay;
+    for (let j = 0; j < K; j++) {
+      const Nj = Math.fround(N[j] * decay);
+      if (cnt[j] === 0) { N[j] = Nj; continue; }
+      const Nn = Math.fround(Nj + a * cnt[j]);
+      const inv = 1 / Math.max(Nn, EMA_EPS);
+      for (let t = 0; t < d; t++) {
+        C[j * d + t] = Math.fround((C[j * d + t] * Nj + a * sum[j * d + t]) * inv);
+      }
+      N[j] = Nn;
+    }
+  }
+  revive(ratio) {
+    const { K, d, C, N } = this;
+    let total = 0;
+    for (let j = 0; j < K; j++) total += N[j];
+    const thr = ratio * total / K;
+    const dead = [], keys = [];
+    for (let j = 0; j < K; j++) {
+      if (N[j] < thr) { dead.push(j); continue; }
+      if (N[j] > 0) {
+
+        const u = Math.max(this.rng(), 1e-300);
+        keys.push([Math.log(N[j]) - Math.log(-Math.log(u)), j]);
+      }
+    }
+    const take = Math.min(dead.length, keys.length);
+    if (take === 0) return 0;
+    keys.sort((p, q) => q[0] - p[0]);
+    for (let m = 0; m < take; m++) {
+      const src = keys[m][1], dst = dead[m];
+      const hu = Math.fround(N[src] / 2);
+      const keep = hu / Math.max(hu, EMA_EPS);
+      for (let t = 0; t < d; t++) {
+        const v = C[src * d + t], s = (t % 2 === 0) ? 1 : -1;
+        C[src * d + t] = Math.fround(Math.fround(v * (1 - SPLIT_EPS * s)) * keep);
+        C[dst * d + t] = Math.fround(Math.fround(v * (1 + SPLIT_EPS * s)) * keep);
+      }
+      N[src] = hu; N[dst] = hu;
+    }
+    this.splits += take;
+    return take;
+  }
+}
+
+function float32Rows(X) {
+  const flat = flattenRows(X);
+  for (let i = 0; i < flat.length; i++) flat[i] = Math.fround(flat[i]);
+  return flat;
+}
+
+class LloydTrainer {
+  constructor(X, K, d, nIter, seed, precision, deferLoss) {
+    this.Xflat = float32Rows(X); this.K = K; this.d = d; this.nIter = nIter;
+    this.n = X.length;
+    this.Xr = precision === "bf16" ? roundBf16(this.Xflat) : null;
+    this.cb = new EmaCodebook(this.Xflat, this.n, K, d, seed);
+    this.Cflat = this.cb.C;
+    this.it = 0;
+    this.done = false;
+    this.codes = new Int32Array(this.n);
+    this.assigner = makeAssignerIfWorthIt(this.Xflat, this.n, d, K);
+    // deferLoss: the caller scores the start itself (e.g. on the worker pool) instead of here
+    this.loss = deferLoss ? NaN : fullAssignFlat(this.Xflat, this.n, this.Cflat, K, d, this.codes).loss;
+    this.trainMs = 0;
+    this.pool = null;
+    this.trainCodes = new Int32Array(this.n);
+  }
+  get C() { return rowsFromFlat(this.Cflat, this.K, this.d); }
+  get splits() { return this.cb.splits; }
+  terminate() { if (this.assigner) this.assigner.terminate(); }
+  async stepOnce() {
+    if (this.done) return;
+    const { cb, n, K, d, Xflat, Xr } = this;
+
+    const t0 = performance.now();
+    if (this.pool) {
+      await this.pool.assign(cb.C, K, 0, n, false, this.trainCodes);
+      cb.collectFromCodes(Xflat, null, 0, n, this.trainCodes);
+    } else {
+      cb.collect(Xflat, Xr, null, 0, n, null);
+    }
+    cb.blend(0.0);
+    cb.revive(1e-9);
+    this.trainMs += performance.now() - t0;
+    this.it++;
+
+    this.loss = (await fullAssignMaybeParallel(this.assigner, Xflat, n, this.Cflat, K, d, this.codes)).loss;
+    if (this.it >= this.nIter) this.done = true;
+  }
+}
+
+class EmeansTrainer {
+  // shareData: a trainer built from the same points (Lloyd's): its flat copies and scoring workers are reused
+  constructor(X, K, d, epochs, seed, reviveRatio, precision, deferLoss, shareData) {
+    this.Xflat = shareData ? shareData.Xflat : float32Rows(X); this.K = K; this.d = d;
+    this.epochs = Math.max(1, epochs);
+    this.n = X.length;
+    this.Xr = shareData ? shareData.Xr : (precision === "bf16" ? roundBf16(this.Xflat) : null);
+    this.reviveRatio = (reviveRatio === undefined || reviveRatio === null) ? 0.1 : reviveRatio;
+    this.reviveEvery = 5;
+    this.cb = new EmaCodebook(this.Xflat, this.n, K, d, seed);
+    this.Cflat = this.cb.C;
+    this.B = valleyBatch(K, this.epochs, this.n);
+    this.alpha0 = peakStep(this.B, K, this.epochs, this.n);
+    this.stepsPerEpoch = Math.floor(this.n / this.B);
+    this.captureSteps = Math.ceil(this.n / this.B);
+    this.scheduleSteps = this.epochs * this.stepsPerEpoch;
+    this.trainMs = 0;
+    this.pool = null;
+    this.batchCodes = new Int32Array(this.B);
+    this.totalSteps = (this.epochs - 1) * this.stepsPerEpoch + this.captureSteps;
+    this.step = 0;
+    this.untilCheck = this.reviveEvery;
+    this.epoch = -1; this.inEpoch = 0; this.perm = null;
+    this.capSum = null; this.capCnt = null;
+    this.done = false;
+    this.codes = new Int32Array(this.n);
+    this.assigner = shareData ? shareData.assigner : makeAssignerIfWorthIt(this.Xflat, this.n, d, K);
+    this.loss = deferLoss ? NaN : fullAssignFlat(this.Xflat, this.n, this.Cflat, K, d, this.codes).loss;
+  }
+  get C() { return rowsFromFlat(this.Cflat, this.K, this.d); }
+  get splits() { return this.cb.splits; }
+  get capturing() { return this.epoch === this.epochs - 1; }
+  stepsInEpoch() { return this.capturing ? this.captureSteps : this.stepsPerEpoch; }
+
+  get progress() {
+    if (this.done) return this.epochs;
+    if (this.epoch < 0) return 0;
+    return this.epoch + this.inEpoch / this.stepsInEpoch();
+  }
+  decayAt(step) {
+    const frac = Math.min(step, this.scheduleSteps) / Math.max(1, this.scheduleSteps);
+    const shape = 0.5 * (1 + Math.cos(Math.PI * frac));
+    return 1 - this.alpha0 * (ALPHA_MIN_FRAC + (1 - ALPHA_MIN_FRAC) * shape);
+  }
+  async stepOnce() {
+    if (this.done) return;
+    const { cb, K, d, n } = this;
+    if (this.perm === null || this.inEpoch === this.stepsInEpoch()) {
+      this.epoch++; this.inEpoch = 0;
+      this.perm = shuffledIndices(cb.rng, n);
+      if (this.pool) this.pool.setPerm(this.perm);
+      if (this.capturing) { this.capSum = new Float64Array(K * d); this.capCnt = new Float64Array(K); }
+    }
+    const off = this.inEpoch * this.B;
+    const len = Math.min(this.B, n - off);
+    if (this.pool) {
+      await this.pool.assign(cb.C, K, off, off + len, true, this.batchCodes);
+      cb.collectFromCodes(this.Xflat, this.perm, off, len, this.batchCodes);
+    } else {
+      cb.collect(this.Xflat, this.Xr, this.perm, off, len, null);
+    }
+    if (this.capturing) {
+      for (let j = 0; j < K; j++) this.capCnt[j] += cb.cnt[j];
+      for (let i = 0; i < K * d; i++) this.capSum[i] += cb.sum[i];
+    }
+    cb.blend(this.decayAt(this.step));
+    if (--this.untilCheck === 0) {
+      this.untilCheck = this.reviveEvery;
+      if (!this.capturing && this.reviveRatio > 0) cb.revive(this.reviveRatio);
+    }
+    this.step++; this.inEpoch++;
+    if (this.capturing && this.inEpoch === this.captureSteps) {
+      for (let j = 0; j < K; j++) {
+        if (this.capCnt[j] > 0) {
+          for (let t = 0; t < d; t++) cb.C[j * d + t] = Math.fround(this.capSum[j * d + t] / this.capCnt[j]);
+        }
+      }
+      this.done = true;
+    }
+  }
+  async scoreFull() {
+    this.loss = (await fullAssignMaybeParallel(this.assigner, this.Xflat, this.n, this.Cflat, this.K, this.d, this.codes)).loss;
+    return this.loss;
+  }
+  terminate() { if (this.assigner) this.assigner.terminate(); }
+}
+
+window.LloydTrainer = LloydTrainer;
+window.EmeansTrainer = EmeansTrainer;
+window.GENERATORS = GENERATORS;
+window.flattenRows = flattenRows;
+window.fullAssignFlat = fullAssignFlat;
+window.fullAssignMaybeParallel = fullAssignMaybeParallel;
+window.makeAssignerIfWorthIt = makeAssignerIfWorthIt;
+window.ParallelAssigner = ParallelAssigner;
+
+// Canvas pixels per CSS pixel. The loss chart, whose labels are read, follows the screen's density: at least 2 (as
+// before, so desktops are unchanged) and at most 3 (phones). The two scatter plots stay at 2: a phone shows them at
+// half its width, so 2x is already more pixels than it displays, and 3x slowed the replay (95th-percentile frame
+// gap 17 -> 33 ms on an emulated 4-core phone).
+const CHART_SCALE = Math.min(3, Math.max(2, Math.ceil(window.devicePixelRatio || 1)));
+function setupCanvas(cv, scale) {
+  const w = cv.width, h = cv.height, s = scale || 2;
+  // only the width is set: the height follows it, so a canvas narrowed by a phone screen keeps its shape
+  cv.style.width = w + "px";
+  cv.width = w * s; cv.height = h * s;
+  const ctx = cv.getContext("2d");
+  ctx.scale(s, s);
+  return { ctx, w, h };
+}
+function toPx(p, P, bounds) {
+  const [xmin, xmax, ymin, ymax] = bounds;
+  const pad = 0.03;
+  const sx = (P.w * (1 - 2 * pad)) / Math.max(xmax - xmin, 1e-9);
+  const sy = (P.h * (1 - 2 * pad)) / Math.max(ymax - ymin, 1e-9);
+  const s = Math.min(sx, sy);
+  const cx = (xmin + xmax) / 2, cy = (ymin + ymax) / 2;
+  return [P.w / 2 + (p[0] - cx) * s, P.h / 2 - (p[1] - cy) * s];
+}
+const DRAW_POINTS = 4500;
+// The player redraws a panel whenever its frame changes, so the static grey points are drawn once per run
+// into an offscreen canvas and each centroid is stamped from a pre-rendered dot (~10x cheaper than an arc).
+let panelBg = null;
+const dotSprites = {};
+function offscreen(w, h) {
+  const c = document.createElement("canvas");
+  c.width = w * 2; c.height = h * 2;
+  c.getContext("2d").scale(2, 2);
+  return c;
+}
+// cents: flat centroid array, d values per centroid (only the first two are drawn)
+function drawPanel(P, X2, cents, d, color, bounds) {
+  const ctx = P.ctx;
+  if (!panelBg || panelBg.X2 !== X2 || panelBg.w !== P.w || panelBg.h !== P.h) {
+    const c = offscreen(P.w, P.h), g = c.getContext("2d");
+    g.fillStyle = "#ffffff"; g.fillRect(0, 0, P.w, P.h);
+    g.strokeStyle = "#d4d4d8"; g.lineWidth = 1; g.strokeRect(0.5, 0.5, P.w - 1, P.h - 1);
+    g.fillStyle = "rgba(120,120,128,0.30)";
+    for (let i = 0; i < X2.length; i++) {
+      const q = toPx(X2[i], P, bounds);
+      g.fillRect(q[0] - 1.1, q[1] - 1.1, 2.2, 2.2);
+    }
+    panelBg = { X2, w: P.w, h: P.h, canvas: c };
+  }
+  if (!dotSprites[color]) {
+    const c = offscreen(12, 12), g = c.getContext("2d");
+    g.beginPath(); g.arc(6, 6, 4.2, 0, 2 * Math.PI);
+    g.fillStyle = color; g.fill();
+    g.lineWidth = 1.1; g.strokeStyle = "#ffffff"; g.stroke();
+    dotSprites[color] = c;
+  }
+  ctx.clearRect(0, 0, P.w, P.h);
+  ctx.drawImage(panelBg.canvas, 0, 0, P.w, P.h);
+  const dot = dotSprites[color], p = [0, 0];
+  for (let j = 0; j < cents.length; j += d) {
+    p[0] = cents[j]; p[1] = cents[j + 1];
+    const q = toPx(p, P, bounds);
+    ctx.drawImage(dot, Math.round(2 * q[0]) / 2 - 6, Math.round(2 * q[1]) / 2 - 6, 12, 12);
+  }
+}
+
+function drawChart(P, series, xMax, tCur) {
+  const ctx = P.ctx;
+  ctx.clearRect(0, 0, P.w, P.h);
+  const tEnd = tCur === undefined ? Infinity : tCur + 1e-9;
+  // each curve up to the cursor; a measured (non-staircase) curve runs on along the straight line to its
+  // next measured point, so it grows smoothly instead of jumping a whole segment at a time
+  const vis = series.map(s => {
+    const h = s.hist, tLast = Math.min(tEnd, s.end === undefined ? Infinity : s.end + 1e-9);
+    let k = 0;
+    while (k < h.length && h[k][0] <= tLast) k++;
+    const pts = h.slice(0, k);
+    if (!s.step && k > 0 && k < h.length && tEnd < Infinity && tCur > h[k - 1][0]) {
+      const a = h[k - 1], b = h[k], f = (tCur - a[0]) / (b[0] - a[0]);
+      pts.push([tCur, a[1] + f * (b[1] - a[1])]);
+    }
+    return pts;
+  });
+  // the vertical scale covers every measured point, so it changes only when a new point is measured
+  let yMin = Infinity, yMax = -Infinity;
+  for (const s of series) for (const h of s.hist) { if (h[1] < yMin) yMin = h[1]; if (h[1] > yMax) yMax = h[1]; }
+  if (yMin === Infinity) return;
+  // at least 5% of the top value tall, so the tick labels never repeat
+  const minSpan = Math.max(0.05 * Math.abs(yMax), 1e-12);
+  if (yMax - yMin < minSpan) { const mid = (yMin + yMax) / 2; yMin = mid - minSpan / 2; yMax = mid + minSpan / 2; }
+  const lo = yMin - 0.04 * (yMax - yMin), hi = yMax + 0.02 * (yMax - yMin);
+  const X0 = 62, X1 = P.w - 12, Y0 = P.h - 56, Y1 = 4;
+  const xy = (t, m) => [X0 + (X1 - X0) * t / Math.max(xMax, 1e-9),
+                        Y0 - (Y0 - Y1) * (m - lo) / Math.max(hi - lo, 1e-12)];
+  let GRID = xMax > 10 ? 5 : 1;
+  const maxTicks = xMax >= 100 ? 5 : 10;   // 3-4 digit labels need more room
+  for (const g of [10, 20, 50, 100, 200, 500]) if (xMax / GRID > maxTicks) GRID = g;
+  ctx.font = "13px -apple-system,Arial,sans-serif";
+  ctx.strokeStyle = "#ededed"; ctx.lineWidth = 1;
+  for (let t = 0; t <= xMax + 1e-9; t += GRID) {
+    const x = xy(t, lo)[0];
+    ctx.beginPath(); ctx.moveTo(x, Y0); ctx.lineTo(x, Y1); ctx.stroke();
+  }
+  ctx.strokeStyle = "#333336"; ctx.lineWidth = 1.1; ctx.strokeRect(X0, Y1, X1 - X0, Y0 - Y1);
+  ctx.fillStyle = "#333336"; ctx.textAlign = "center";
+  for (let t = 0; t <= xMax + 1e-9; t += GRID) ctx.fillText(String(Math.round(t)), xy(t, lo)[0], Y0 + 18);
+  ctx.fillText("epochs", (X0 + X1) / 2, Y0 + 38);
+  ctx.textAlign = "right";
+  // below 1e-3 a fixed-point label ("0.000216") is wider than the margin and loses its "0."
+  const expo = yMin < 1e-3;
+  for (let i = 0; i <= 5; i++) {
+    const v = yMin + (yMax - yMin) * i / 5, y = xy(0, v)[1];
+    if (y > Y1 + 6 && y < Y0 - 2) ctx.fillText(expo ? v.toExponential(2) : v.toPrecision(3), X0 - 6, y + 4);
+  }
+  function drawLine(s, hist) {
+    if (hist.length === 0) return;
+    ctx.save();
+    ctx.setLineDash(s.dashed ? [6, 5] : []);
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = s.dashed ? 1.6 : (s.step ? 2.2 : 2.6);
+    ctx.beginPath();
+    let k = 0;
+    for (; k < hist.length; k++) {
+      const pt = hist[k], q = xy(pt[0], pt[1]);
+      if (k === 0) { ctx.moveTo(q[0], q[1]); continue; }
+      if (s.step) { const prev = xy(pt[0], hist[k - 1][1]); ctx.lineTo(prev[0], prev[1]); }
+      ctx.lineTo(q[0], q[1]);
+    }
+    // a staircase holds its last value up to the cursor, but not past the method's last epoch
+    const tHold = Math.min(tCur, xMax, s.end === undefined ? Infinity : s.end);
+    if (s.step && k > 0 && tEnd < Infinity && hist[k - 1][0] < tHold) {
+      const q = xy(tHold, hist[k - 1][1]); ctx.lineTo(q[0], q[1]);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+  series.forEach((s, i) => drawLine(s, vis[i]));
+  if (tEnd < Infinity) {
+    const x = xy(tCur, lo)[0];
+    ctx.strokeStyle = "rgba(29,29,31,0.55)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x, Y0); ctx.lineTo(x, Y1); ctx.stroke();
+  }
+}
+
+const emPaper = document.querySelector(".em-paper");
+document.addEventListener("click", e => {
+  if (emPaper.open && !emPaper.contains(e.target)) emPaper.open = false;
+});
+// iOS sends no click for a tap on plain text, so a finger (or pen) tap outside an open menu closes it here
+document.addEventListener("pointerdown", e => {
+  if (e.pointerType === "mouse") return;
+  for (const p of document.querySelectorAll(".em-paper[open]")) if (!p.contains(e.target)) p.open = false;
+});
+document.getElementById("emCopy").addEventListener("click", () => {
+  const btn = document.getElementById("emCopy");
+  // no clipboard on http:// pages and in some in-app browsers: say so instead of doing nothing
+  if (!navigator.clipboard) { btn.textContent = "Select the text to copy"; return; }
+  navigator.clipboard.writeText(document.getElementById("emCite").textContent).then(
+    () => { btn.textContent = "Copied"; setTimeout(() => { btn.textContent = "Copy citation"; }, 1500); },
+    () => { btn.textContent = "Select the text to copy"; });
+});
+const startBtn = document.getElementById("startBtn");
+let runState = "idle";
+function setRunState(st) {
+  runState = st;
+  updateMainBtn();
+}
+// The one button: Train when nothing is loaded, the settings changed or the run is over; Pause while it
+// plays; Resume when paused (dragging the slider back and pressing Resume replays from there).
+const SETTING_IDS = ["distSelect", "genN", "genSeed", "paramEpochs", "paramIters", "paramK"];
+// the typed numbers are compared as numbers, so "07" is the same seed as "7" (and an empty box is not seed 0)
+const settingsKey = () => SETTING_IDS.map(id => {
+  const v = document.getElementById(id).value;
+  return id === "genSeed" || id === "paramIters" ? String(parseInt(v, 10)) : v;
+}).join("|");
+function mainMode() {
+  const r = cur;
+  if (runState === "starting") return "starting";
+  if (!r || r.key !== settingsKey()) return "train";
+  if (playing) return "pause";
+  if ((r.done && playhead >= r.T - 1e-9) || (r.failed && playhead >= r.frontier - 1e-9)) return "train";
+  return "resume";
+}
+function updateMainBtn() {
+  const m = mainMode();
+  startBtn.innerHTML = { starting: "Preparing&hellip;", train: "&#9654;&#xFE0E; Train", pause: "&#10074;&#10074; Pause",
+    resume: "&#9654;&#xFE0E; Resume" }[m];
+  // the click acts on the mode the label shows (see the click handler)
+  startBtn.dataset.mode = m;
+  startBtn.setAttribute("aria-disabled", m === "starting" ? "true" : "false");
+}
+const statusBox = document.getElementById("statusBox");
+const resultBox = document.getElementById("resultBox");
+const animRow = document.getElementById("animRow");
+const cvL = setupCanvas(animRow.querySelector("canvas.left"));
+const cvE = setupCanvas(animRow.querySelector("canvas.right"));
+const cvC = setupCanvas(animRow.querySelector("canvas.chart"), CHART_SCALE);
+const rL = animRow.querySelector("[data-r=lloyd]");
+const rE = animRow.querySelector("[data-r=ema]");
+const slider = document.querySelector(".controls .slider-col input[type=range]");
+const tval = document.querySelector(".controls .slider-label .val");
+const twait = document.querySelector(".controls .slider-label .wait");
+
+let lloyd = null, ema = null, stepsPerEpochEma = 1, testAssigner = null, trainPool = null;
+let lloydTrainHist = [], lloydTestHist = [], emaTrainHist = [], emaTestHist = [];
+
+function setResult(lTrain, eTrain, lTest, eTest, epochsEma, itersLloyd) {
+  // one sentence comparing the final losses with Lloyd's; a number is blue when e-means is better, red when worse
+  const part = (what, lw, ew) => {
+    const win = ew < lw, pct = (100 * Math.abs(ew / lw - 1)).toFixed(1);
+    return '<b class="' + (win ? "better" : "worse") + '">' + pct + "%</b> " + (win ? "lower " : "higher ") + what + " loss";
+  };
+  const winTest = eTest < lTest, winTrain = eTrain < lTrain;
+  const epochs = m => m + (m === 1 ? " epoch" : " epochs");
+  let html = "e-means: " + part("test", lTest, eTest) + (winTest === winTrain ? " and " : " but ")
+    + part("train", lTrain, eTrain) + " than Lloyd, in " + epochs(epochsEma) + " instead of " + itersLloyd + ".";
+  if (winTest !== winTrain) html += '<div class="tip">Try more epochs, or another seed, or slow EMA (see paper).</div>';
+  else if (!winTest) html += '<div class="tip">Try more epochs or another seed.</div>';
+  resultBox.innerHTML = "<div>" + html + "</div>";
+}
+
+function setStatus(msg, isErr) {
+  statusBox.textContent = msg;
+  statusBox.className = "status" + (isErr ? " err" : "");
+}
+
+function dataBounds(X2) {
+  let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+  for (const p of X2) {
+    if (p[0] < xmin) xmin = p[0]; if (p[0] > xmax) xmax = p[0];
+    if (p[1] < ymin) ymin = p[1]; if (p[1] > ymax) ymax = p[1];
+  }
+  return [xmin, xmax, ymin, ymax];
+}
+
+function heldOutCount(n) { return Math.max(2000, Math.round(0.2 * n)); }
+function splitTrainTest(X, seed, nTrain) {
+  const rng = mulberry32(seed);
+  const idx = shuffledIndices(rng, X.length);
+  return { train: idx.slice(0, nTrain).map(i => X[i]), test: idx.slice(nTrain).map(i => X[i]) };
+}
+
+const EMA_FRAMES_PER_EPOCH = 30;          // display cap on recorded frames; the algorithm is unchanged
+const SNAPSHOT_BUDGET = 48e6;              // bytes of recorded centroids per run
+const SCORE_FRAC = 0.25;                   // mid-epoch e-means scoring: at most this share of its training time
+const SLICE_MS = 8;
+// the replay can be slowed down (never sped up) with the Play speed slider
+let playSpeed = 1;
+document.getElementById("playSpeed").addEventListener("input", e => {
+  playSpeed = parseFloat(e.target.value);
+  document.getElementById("playSpeedVal").textContent = (Math.round(playSpeed * 100) / 100) + "\u00d7";
+});
+const PLAY_EPOCHS_PER_SEC = 1000 / 90;    // the old page's top speed (one epoch per 90 ms); slower runs play as they train
+
+// A macrotask yield: unlike awaiting a resolved promise, it lets the browser paint and handle input.
+const _yieldCh = new MessageChannel(), _yieldQ = [];
+_yieldCh.port1.onmessage = () => { const r = _yieldQ.shift(); if (r) r(); };
+function yieldToBrowser() {
+  return new Promise(r => { _yieldQ.push(r); _yieldCh.port2.postMessage(0); });
+}
+
+// Frames to record: every Lloyd epoch, and per e-means epoch at most 30 snapshots evenly spaced
+// over its updates; both thinned evenly when the snapshots would not fit in SNAPSHOT_BUDGET.
+function planFrames(L, E, spe, capSteps, K, d) {
+  const frameBytes = K * d * 4, maxFrames = Math.max(4, Math.floor(SNAPSHOT_BUDGET / frameBytes));
+  const steps = e => e === E - 1 ? capSteps : spe;
+  const emaCount = c => { let s = 1; for (let e = 0; e < E; e++) s += Math.min(c, steps(e)); return s; };
+  const lloydCount = s => Math.floor(L / s) + 1 + (L % s ? 1 : 0);
+  const wantL = L + 1, wantE = emaCount(EMA_FRAMES_PER_EPOCH);
+  let cap = EMA_FRAMES_PER_EPOCH, stride = 1;
+  if (wantL + wantE > maxFrames) {
+    const half = Math.floor(maxFrames / 2);
+    const budE = wantL <= half ? maxFrames - wantL : Math.min(wantE, maxFrames - half);
+    while (cap > 1 && emaCount(cap) > budE) cap--;
+    while (stride < L && lloydCount(stride) > maxFrames - emaCount(cap)) stride++;
+  }
+  const targets = [];
+  for (let e = 0; e < E; e++) {
+    const s = steps(e), f = Math.min(cap, s);
+    for (let j = 1; j <= f; j++) targets.push({ step: e * spe + Math.round(j * s / f), boundary: j === f });
+  }
+  return { cap, stride, targets, frameBytes, planned: lloydCount(stride) + emaCount(cap),
+    thinE: emaCount(cap) < wantE, thinL: stride > 1 };
+}
+
+function lastAtOrBefore(n, timeAt, t) {
+  let lo = 0, hi = n - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (timeAt(mid) <= t + 1e-9) lo = mid; else hi = mid - 1; }
+  return lo;
+}
+const fmtT = t => Number.isInteger(t) ? String(t) : t.toFixed(2);
+// below 1e-3, five decimals leave one or two digits and both methods can read the same: switch to
+// three significant digits, as the chart axis does
+const fmtMSE = v => v > 0 && v < 1e-3 ? v.toExponential(2) : v.toFixed(5);
+
+// runId changes whenever a run is started; every await in a run re-checks it, so a superseded
+// run can never write a frame, a loss or a verdict.
+let runId = 0, cur = null, playing = false, playhead = 0, rafId = null, lastTs = null, runKey = "";
+
+function setPlaying(p) {
+  playing = p;
+  updateMainBtn();
+  lastTs = null;
+  if (cur) { cur.shownVer = -1; if (!p) cur.speed = 0; }
+  if (p) requestRender();
+}
+function requestRender() { if (!rafId) rafId = requestAnimationFrame(tick); }
+function tick(ts) {
+  rafId = null;
+  const r = cur;
+  if (!r) return;
+  if (playing) {
+    const dt = lastTs === null ? 0 : Math.min(0.1, (ts - lastTs) / 1000);
+    lastTs = ts;
+    let v = PLAY_EPOCHS_PER_SEC;
+    if (!r.done && !r.failed) {
+      // like a video still loading: play at the pace training sustains and stay far enough behind it to
+      // ride out the longest pause seen so far (a Lloyd epoch is one pass over all the points)
+      const rate = r.frontier / Math.max((ts - r.t0) / 1000, 0.25);
+      const lead = Math.max(1.25 * r.maxGap * rate, 0.02 * r.T);
+      v = Math.min(v, rate * Math.min(1.5, (r.frontier - playhead) / lead));
+    }
+    r.speed += (v - r.speed) * Math.min(1, dt * 4);   // speed changes eased over ~0.25 s
+    playhead = Math.min(playhead + dt * Math.max(r.speed, 0) * playSpeed, r.frontier);
+    if (r.done && playhead >= r.T) { playhead = r.T; setPlaying(false); }
+    else if (r.failed && playhead >= r.frontier) setPlaying(false);
+  }
+  render(r);
+  if (playing) requestRender();
+}
+
+function render(r) {
+  if (r.shownT === playhead && r.shownVer === r.ver) return;
+  const t = playhead;
+  slider.value = String(t);
+  slider.style.setProperty("--pf", String(t / r.T));
+  slider.style.setProperty("--bf", String(r.frontier / r.T));
+  slider.style.setProperty("--be", r.frontier >= r.T ? "1" : "0");
+  // truncated, not rounded, so the label never reads 1.00 while the panels still show epoch 0
+  tval.textContent = (Math.floor(t * 100 + 1e-9) / 100).toFixed(2);
+  twait.textContent = r.failed && t >= r.frontier - 1e-9 ? " (training stopped: error)"
+    : playing && !r.done && t >= r.frontier ? " (training\u2026)" : "";
+  const li = lastAtOrBefore(r.lFrames.length, i => r.lFrames[i].t, t);
+  const ei = lastAtOrBefore(r.eFrames.length, i => r.eFrames[i].t, t);
+  if (li !== r.drawnL) {
+    r.drawnL = li;
+    drawPanel({ ctx: cvL.ctx, w: cvL.w, h: cvL.h }, r.X2, r.lFrames[li].C, r.d, "#d62728", r.bounds);
+  }
+  if (ei !== r.drawnE) {
+    r.drawnE = ei;
+    drawPanel({ ctx: cvE.ctx, w: cvE.w, h: cvE.h }, r.X2, r.eFrames[ei].C, r.d, "#1f77b4", r.bounds);
+  }
+  const it = r.lFrames[li].t;
+  // with thinned Lloyd frames, the Lloyd curves stop at the epoch its panel shows
+  const lEnd = r.plan.stride > 1 ? it : r.L;
+  drawChart({ ctx: cvC.ctx, w: cvC.w, h: cvC.h }, [
+    { hist: r.eTr, color: "#1f77b4", dashed: false },
+    { hist: r.eTe, color: "#1f77b4", dashed: true },
+    { hist: r.lTr, color: "#d62728", dashed: false, step: true, end: lEnd },
+    { hist: r.lTe, color: "#d62728", dashed: true, step: true, end: lEnd },
+  ], r.T, t);
+  rL.innerHTML = "Train MSE <b>" + fmtMSE(r.lTr[it][1]) + "</b>, test MSE <b>"
+    + fmtMSE(r.lTe[it][1]) + "</b> after " + it + (it === 1 ? " epoch" : " epochs");
+  // e-means is scored on a cadence, so show the last measured point and the time it was measured at
+  const k = lastAtOrBefore(r.eTr.length, i => r.eTr[i][0], t), te = r.eTr[k][0];
+  rE.innerHTML = "Train MSE <b>" + fmtMSE(r.eTr[k][1]) + "</b>, test MSE <b>"
+    + fmtMSE(r.eTe[k][1]) + "</b> after " + fmtT(te)
+    + (te === 1 ? " epoch" : " epochs");
+  // the verdict is about the final codebooks, so it shows only while the playhead is at the end
+  const atEnd = r.done && t >= r.T - 1e-9;
+  if (atEnd !== r.verdict) {
+    r.verdict = atEnd;
+    const last = h => h[h.length - 1][1];
+    if (atEnd) setResult(last(r.lTr), last(r.eTr), last(r.lTe), last(r.eTe), r.E, r.L);
+    else resultBox.innerHTML = "";
+  }
+  r.shownT = t; r.shownVer = r.ver;
+}
+
+// Trains both methods to completion, strictly one call at a time (the worker pools are shared),
+// recording frames for the player and yielding to the browser between slices.
+async function computeRun(r) {
+  const { gen, K, d, plan, lloyd: Lt, ema: Et } = r;
+  const alive = () => gen === runId;
+  let fi = 0, sliceT0 = performance.now();
+  const breathe = async () => {
+    if (performance.now() - sliceT0 < SLICE_MS) return true;
+    await yieldToBrowser();
+    // training pauses while the tab is in the background, as the browser's animation does
+    const hiddenFrom = performance.now();
+    while (document.hidden && alive()) {
+      await new Promise(res => document.addEventListener("visibilitychange", res, { once: true }));
+    }
+    const hiddenMs = performance.now() - hiddenFrom;
+    if (hiddenMs > 50) { r.t0 += hiddenMs; r.lastAdv += hiddenMs; }
+    sliceT0 = performance.now();
+    return alive();
+  };
+  const testLoss = async C => (await fullAssignMaybeParallel(r.testAssigner, r.testXflat, r.testN, C, K, d)).loss;
+  while (!Lt.done || !Et.done) {
+    if (!Lt.done && (Et.done || r.lT <= r.eT)) {
+      await Lt.stepOnce();
+      if (!alive()) return;
+      const te = await testLoss(Lt.Cflat);
+      if (!alive()) return;
+      r.lTr.push([Lt.it, Lt.loss]); r.lTe.push([Lt.it, te]);
+      if (Lt.it % plan.stride === 0 || Lt.done) r.lFrames.push({ t: Lt.it, C: new Float32Array(Lt.Cflat) });
+      r.lT = Lt.done ? r.T : Lt.it;
+    } else {
+      const tg = plan.targets[fi++];
+      if (!tg) throw new Error("e-means frame plan exhausted before the run finished");
+      while (Et.step < tg.step) {
+        const t0 = performance.now();
+        await Et.stepOnce();
+        if (!alive()) return;
+        const dt = performance.now() - t0;
+        Et.trainMs += dt; r.trainSince += dt;
+        if (!(await breathe())) return;
+      }
+      const t = Et.progress, C = new Float32Array(Et.Cflat);
+      // full-data scoring costs about one pass: always at epoch ends, in between only while
+      // it stays under SCORE_FRAC of the training time spent since the last score
+      if (tg.boundary || r.trainSince * SCORE_FRAC >= r.scoreMs) {
+        const s0 = performance.now();
+        const tr = await Et.scoreFull();
+        if (!alive()) return;
+        const te = await testLoss(Et.Cflat);
+        if (!alive()) return;
+        const ms = performance.now() - s0;
+        r.scoreMs = r.nScored ? 0.5 * (r.scoreMs + ms) : ms;
+        r.scoreTotal += ms; r.nScored++; r.trainSince = 0;
+        r.eTr.push([t, tr]); r.eTe.push([t, te]);
+      }
+      r.eFrames.push({ t, C });
+      r.eT = Et.done ? r.T : t;
+    }
+    r.frontier = Math.min(r.lT, r.eT);
+    if (r.frontier > r.lastFrontier) {
+      const nowMs = performance.now();
+      r.maxGap = Math.max(r.maxGap, (nowMs - r.lastAdv) / 1000);
+      r.lastAdv = nowMs; r.lastFrontier = r.frontier;
+    }
+    r.bytes = (r.lFrames.length + r.eFrames.length) * plan.frameBytes;
+    r.ver++;
+    requestRender();
+    if (!(await breathe())) return;
+  }
+  r.done = true; r.frontier = r.T; r.ver++;
+  // the replay needs only the recorded frames: free the workers and the copies of the data now, rather than
+  // at the next Train (a phone may otherwise discard this tab when the visitor switches away)
+  releaseWorkers();
+  freeTrainingData(r);
+  setRunState("done");
+  updateMainBtn();
+  requestRender();
+}
+
+// The workers hold copies of the data, so they go as soon as a run is cancelled or has failed.
+function releaseWorkers() {
+  if (lloyd) lloyd.terminate();
+  if (ema) ema.terminate();
+  if (testAssigner) testAssigner.terminate();
+  if (trainPool) trainPool.terminate();
+  lloyd = ema = testAssigner = trainPool = null;
+}
+
+function freeTrainingData(r) {
+  for (const t of [r.lloyd, r.ema]) {
+    t.Xflat = t.Xr = t.codes = t.trainCodes = t.batchCodes = t.perm = t.capSum = t.capCnt = null;
+  }
+  r.testXflat = null;
+}
+
+function cancelRun() {
+  setPlaying(false);
+  cur = null;
+  releaseWorkers();
+  lloydTrainHist = []; lloydTestHist = []; emaTrainHist = []; emaTestHist = [];
+  resultBox.innerHTML = "";
+  slider.disabled = true;
+  // the old run's numbers go now; its pictures stay, dimmed, until the new run replaces them
+  rL.innerHTML = rE.innerHTML = "";
+  slider.value = "0";
+  slider.style.setProperty("--pf", "0");
+  slider.style.setProperty("--bf", "0");
+  slider.style.setProperty("--be", "0");
+  tval.textContent = "0.00";
+  twait.textContent = "";
+  animRow.classList.add("stale");
+}
+
+// A run's description, under its error lines (in red).
+function showRunStatus(r, errs) {
+  statusBox.textContent = "";
+  statusBox.className = "status";
+  for (const msg of errs) {
+    const e = document.createElement("span");
+    e.className = "err";
+    e.textContent = msg;
+    statusBox.append(e, "\n");
+  }
+  statusBox.append(r.status);
+}
+
+// A settings error must not wipe the description of a run that is still there to be watched,
+// nor the notice that this run stopped with an error.
+function settingsError(msg) {
+  settingsErrShown = true;
+  if (!cur) { setStatus(msg, true); return; }
+  showRunStatus(cur, cur.failMsg ? [msg, cur.failMsg] : [msg]);
+}
+
+async function startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, precision, nTrain) {
+  const d = X[0].length;
+  const n = X.length;
+  if (!nTrain) nTrain = Math.round(0.8 * n);
+  if (K >= n) { setStatus("𝑘 must be smaller than the number of points (" + n + ").", true); return; }
+
+  const { train: trainX, test: testX } = splitTrainTest(X, 1234, nTrain);
+  if (trainX.length < 2 * K) { setStatus("Need at least 2 training points per cluster (have " + trainX.length + " for 𝑘=" + K + ").", true); return; }
+  await yieldToBrowser();
+  if (gen !== runId) return;
+
+  // only the points the panels draw are kept for drawing (every stride-th one); the bounds use every point
+  const bounds = dataBounds(trainX);
+  const X2 = [], stride = Math.max(1, Math.floor(trainX.length / DRAW_POINTS));
+  for (let i = 0; i < trainX.length; i += stride) X2.push([trainX[i][0], trainX[i][1]]);
+  await yieldToBrowser();
+  if (gen !== runId) return;
+  lloyd = new LloydTrainer(trainX, K, d, itersLloyd, 0, precision, true);
+  await yieldToBrowser();
+  if (gen !== runId) return;
+  ema = new EmeansTrainer(trainX, K, d, epochsEma, 0, reviveRatio, precision, true, lloyd);
+  // both start from the same seed-0 centroids: score that start once, off the main thread when possible
+  lloyd.loss = (await fullAssignMaybeParallel(lloyd.assigner, lloyd.Xflat, lloyd.n, lloyd.Cflat, K, d, lloyd.codes)).loss;
+  if (gen !== runId) return;
+  ema.loss = lloyd.Cflat.every((v, i) => v === ema.Cflat[i]) ? lloyd.loss : (await ema.scoreFull());
+  if (gen !== runId) return;
+  stepsPerEpochEma = ema.stepsPerEpoch;
+  const nThreads = trainThreads();
+  // Lloyd's full-data assignment always goes to a worker, even a single one, so it never freezes the page
+  // (same codes as the main-thread path); e-means uses the pool when there are several threads, or when
+  // its steps are big enough to stall playback on the main thread.
+  if (nThreads >= 1 && typeof Worker !== "undefined") {
+    trainPool = new TrainPool(Float32Array.from(lloyd.Xr), d, nThreads);
+    lloyd.pool = trainPool;
+    const work = ema.B * K;
+    if ((nThreads > 1 && work >= EMA_POOL_MIN_WORK) || work >= EMA_POOL_SOLO_WORK) ema.pool = trainPool;
+  }
+
+  const testXflat = flattenRows(testX);
+  const testN = testX.length;
+  testAssigner = makeAssignerIfWorthIt(testXflat, testN, d, K);
+  const lloydTestLoss0 = (await fullAssignMaybeParallel(testAssigner, testXflat, testN, lloyd.Cflat, K, d)).loss;
+  if (gen !== runId) return;
+  const s0 = performance.now();
+  const emaTestLoss0 = (await fullAssignMaybeParallel(testAssigner, testXflat, testN, ema.Cflat, K, d)).loss;
+  if (gen !== runId) return;
+  const testMs = performance.now() - s0;
+  lloydTrainHist = [[0, lloyd.loss]];
+  lloydTestHist = [[0, lloydTestLoss0]];
+  emaTrainHist = [[0, ema.loss]];
+  emaTestHist = [[0, emaTestLoss0]];
+
+  const E = ema.epochs, T = Math.max(itersLloyd, E);
+  const plan = planFrames(itersLloyd, E, ema.stepsPerEpoch, ema.captureSteps, K, d);
+  const r = {
+    gen, K, d, E, L: itersLloyd, T, X2, bounds, plan, lloyd, ema, testAssigner, testXflat, testN,
+    lTr: lloydTrainHist, lTe: lloydTestHist, eTr: emaTrainHist, eTe: emaTestHist,
+    lFrames: [{ t: 0, C: new Float32Array(lloyd.Cflat) }], eFrames: [{ t: 0, C: new Float32Array(ema.Cflat) }],
+    lT: 0, eT: 0, frontier: 0, done: false, verdict: false, bytes: 2 * plan.frameBytes, key: runKey,
+    t0: performance.now(), lastAdv: performance.now(), lastFrontier: 0, maxGap: 0, speed: 0,
+    ver: 0, shownT: -1, shownVer: -1, drawnL: -1, drawnE: -1,
+    scoreMs: testMs * (1 + trainX.length / testN), nScored: 0, scoreTotal: 0, trainSince: 0,
+  };
+
+  let thin = "";
+  if (plan.thinE || plan.thinL) {
+    thin = "\nFrames thinned to keep the replay under " + SNAPSHOT_BUDGET / 1e6 + " MB: "
+      + [plan.thinE ? "e-means " + plan.cap + " per epoch" : "", plan.thinL ? "Lloyd every " + plan.stride + " epochs" : ""]
+        .filter(Boolean).join(", ") + ".";
+  }
+  cur = r;
+  playhead = 0;
+  slider.max = String(T);
+  slider.value = "0";
+  slider.disabled = false;
+  animRow.classList.remove("stale");
+  animRow.style.display = "flex";
+  resultBox.style.display = "flex";
+  resultBox.innerHTML = '';
+  // on a phone the plots start below the screen: bring the button, the slider and the plots into view
+  if (PHONE_LAYOUT && PHONE_LAYOUT.matches) {
+    document.querySelector(".controls").scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+  r.status = "𝑛=" + trainX.length + " training points (+" + testX.length + " held out)  𝑑=" + d + "  𝑘=" + K +
+    "   e-means batch=" + ema.B + "  peak step=" + ema.alpha0.toFixed(4) +
+    "   (" + ema.stepsPerEpoch + " steps/epoch, " + ema.totalSteps + " steps total)" + thin;
+  setStatus(r.status);
+  setRunState("running");
+  setPlaying(true);
+  computeRun(r).catch(err => {
+    console.error(err);
+    if (r.gen !== runId) return;
+    // the recorded part stays watchable (playback stops by itself at the frontier); nothing waits for
+    // frames that will never come
+    r.failed = true;
+    r.failMsg = "Training stopped with an error: " + (err && err.message || err);
+    releaseWorkers();
+    setRunState("idle");
+    showRunStatus(r, [r.failMsg]);
+    r.ver++;
+    requestRender();
+  });
+}
+
+// Two shapes split the points into equal groups and drop the remainder, so they can make fewer than asked.
+function rowsGenerated(dist, N, k) {
+  if (dist === "moons_tiled") { const pairs = Math.max(1, Math.floor(k / 2)); return pairs * Math.floor(N / pairs); }
+  if (dist === "rings") { const nRings = Math.max(2, Math.floor(k / 4)); return nRings * Math.floor(N / nRings); }
+  return N;
+}
+
+// Phones and tablets: n stops at the slider's last position, 10^5.47, so that the tab fits in a phone's memory
+// (an audit measured 340-506 MB at 300,000 points against 700-900 MB at 1,000,000), and a run may do at most 3 times
+// the default's work, n x k x (e-means + Lloyd epochs) = 1.5e9, so that it takes about a minute on a
+// mid-range phone (the default took 22 s on an emulated one). Larger settings are refused, never changed.
+const TOUCH_MAX_N = Math.round(Math.pow(10, 5.47));
+const TOUCH_DEFAULT_WORK = 100000 * 500 * (5 + 25), TOUCH_MAX_WORK = 3 * TOUCH_DEFAULT_WORK;
+async function startNewRun() {
+  const K = parseInt(document.getElementById("paramK").value, 10);
+  const epochsEma = parseInt(document.getElementById("paramEpochs").value, 10);
+  const itersLloyd = parseInt(document.getElementById("paramIters").value, 10);
+  const reviveRatio = 0;
+  const precision = "bf16";
+
+  const dist = document.getElementById("distSelect").value;
+  const n = parseInt(document.getElementById("genN").value, 10);
+  const seedText = document.getElementById("genSeed").value.trim();
+  const seed = parseInt(seedText, 10);
+  const d = 2;
+  if (!/^\d+$/.test(seedText)) {
+    settingsError("Seed must be a whole number (0 or more).");
+    return;
+  }
+  if (n < 10000) {
+    settingsError("𝑛 must be at least 10,000 training points.");
+    return;
+  }
+  if (K < 100) {
+    settingsError("𝑘 must be at least 100.");
+    return;
+  }
+  if (n < K * 2) {
+    settingsError("𝑛 must be at least 2𝑘.");
+    return;
+  }
+  if (!(itersLloyd >= 1 && itersLloyd <= 1000)) {
+    settingsError("Lloyd epochs must be between 1 and 1000.");
+    return;
+  }
+  // phones and tablets: memory and time limits, stated in the note at the bottom of the page
+  if (TOUCH_DEVICE) {
+    const work = n * K * (epochsEma + itersLloyd), times = work / TOUCH_DEFAULT_WORK;
+    if (n > TOUCH_MAX_N) {
+      settingsError("On a phone or tablet 𝑛 stops at " + TOUCH_MAX_N.toLocaleString("en-US")
+        + " points (memory). Use a computer for more.");
+      return;
+    }
+    if (work > TOUCH_MAX_WORK) {
+      settingsError("On a phone or tablet a run may do at most 3 times the work of the default one "
+        + "(𝑛 × 𝑘 × all epochs up to 4.5 billion); these settings are "
+        + times.toFixed(1) + " times the default. Lower 𝑛, 𝑘 or the epochs, or use a computer.");
+      return;
+    }
+  }
+  // at least one point must be left over for the held-out test set
+  if (rowsGenerated(dist, n + heldOutCount(n), K) <= n) {
+    settingsError("This shape cannot make " + n.toLocaleString("en-US") + " training points plus a held-out set with this many clusters; lower 𝑘.");
+    return;
+  }
+
+  const gen = ++runId;
+  settingsErrShown = false;
+  runKey = settingsKey();
+  cancelRun();
+  setRunState("starting");
+  setStatus("Preparing…");
+  await new Promise(r => setTimeout(r, 0));
+  if (gen !== runId) return;
+  const X = GENERATORS[dist](n + heldOutCount(n), K, d, seed);
+  await yieldToBrowser();
+  if (gen !== runId) return;
+  await startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, precision, n);
+  if (gen === runId && runState === "starting") setRunState("idle");
+}
+
+let trainAt = -Infinity;
+startBtn.addEventListener("click", () => {
+  const m = mainMode();
+  // act on what the label says: if a setting changed without the label noticing, update it and do nothing
+  if (m !== startBtn.dataset.mode) { updateMainBtn(); return; }
+  // the second click of a double-click on Train must not pause the run it just started
+  if (m === "pause") { if (performance.now() - trainAt > 400) setPlaying(false); return; }
+  if (m === "resume") { setPlaying(true); return; }
+  if (m !== "train") return;
+  trainAt = performance.now();
+  startNewRun().catch(err => {
+    console.error(err);
+    releaseWorkers();
+    setStatus("Could not start: " + (err && err.message || err), true);
+    setRunState("idle");
+  });
+});
+// changing a setting turns the button back into Train (the hidden k and n fields are set by their sliders
+// first) and clears a settings error, which no longer applies
+let settingsErrShown = false;
+function onSettingsInput() {
+  if (settingsErrShown) {
+    settingsErrShown = false;
+    if (cur) showRunStatus(cur, cur.failMsg ? [cur.failMsg] : []);
+    else setStatus("");
+  }
+  updateMainBtn();
+}
+for (const f of document.querySelectorAll("fieldset")) {
+  f.addEventListener("input", onSettingsInput);
+  f.addEventListener("change", onSettingsInput);
+}
+// Scrubbing stops playback (as in the blog figure) and cannot go past what has been computed.
+slider.addEventListener("input", () => {
+  const r = cur;
+  if (!r) return;
+  setPlaying(false);
+  const v = parseFloat(slider.value);
+  playhead = Math.min(v, r.frontier);
+  if (v > r.frontier) slider.value = String(r.frontier);
+  updateMainBtn();
+  requestRender();
+});
+// Arrow keys step to the previous / next recorded frame of either method (the 0.01 step is for the pointer).
+slider.addEventListener("keydown", e => {
+  const r = cur, dir = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+  if (!r || !dir) return;
+  e.preventDefault();
+  let t = dir > 0 ? r.frontier : 0;
+  for (const fr of [r.lFrames, r.eFrames]) {
+    const i = lastAtOrBefore(fr.length, j => fr[j].t, dir > 0 ? playhead : playhead - 2e-9);
+    if (dir > 0 && i + 1 < fr.length) t = Math.min(t, fr[i + 1].t);
+    if (dir < 0 && fr[i].t < playhead - 1e-9) t = Math.max(t, fr[i].t);
+  }
+  setPlaying(false);
+  playhead = Math.min(Math.max(t, 0), r.frontier);
+  updateMainBtn();
+  requestRender();
+});
+
+window.__playerState = () => {
+  const r = cur;
+  const last = h => h[h.length - 1][1];
+  return JSON.stringify({
+    runState, runId, computeDone: !!(r && r.done), frontier: r ? r.frontier : 0, playhead, playing,
+    T_total: r ? r.T : 0, lloydFrames: r ? r.lFrames.length : 0, emaFrames: r ? r.eFrames.length : 0,
+    lloydFrameTimes: r ? r.lFrames.map(f => f.t) : [], emaFrameTimes: r ? r.eFrames.map(f => f.t) : [],
+    snapshotBytes: r ? r.bytes : 0, snapshotBudget: SNAPSHOT_BUDGET, plannedBytes: r ? r.plan.planned * r.plan.frameBytes : 0,
+    shownFrameTimes: r && r.drawnL >= 0 ? { lloyd: r.lFrames[r.drawnL].t, ema: r.eFrames[r.drawnE].t } : null,
+    emaStepsPerEpoch: r ? r.ema.stepsPerEpoch : 0, emaCaptureSteps: r ? r.ema.captureSteps : 0,
+    framesPerEpochCap: r ? r.plan.cap : 0, lloydStride: r ? r.plan.stride : 0,
+    histories: { lloydTrain: lloydTrainHist, lloydTest: lloydTestHist, emaTrain: emaTrainHist, emaTest: emaTestHist },
+    finalMSE: r && r.done ? { lloydTrain: last(r.lTr), lloydTest: last(r.lTe), emaTrain: last(r.eTr), emaTest: last(r.eTe) } : null,
+    readoutLloyd: rL.innerText, readoutEma: rE.innerText, verdictShown: !!(r && r.verdict) && resultBox.innerHTML !== "",
+    status: statusBox.innerText,
+    scoring: r ? { scored: r.nScored, scoreMsEst: r.scoreMs, scoreMsTotal: r.scoreTotal, emaTrainMs: r.ema.trainMs } : null,
+  });
+};
+
+function wireLogSlider(rangeId, valId, hiddenId) {
+  const r = document.getElementById(rangeId);
+  const show = document.getElementById(valId);
+  const hidden = document.getElementById(hiddenId);
+  const update = () => {
+    const v = Math.max(1, Math.round(Math.pow(10, parseFloat(r.value))));
+    hidden.value = String(v);
+    show.textContent = v.toLocaleString("en-US");
+  };
+  r.addEventListener("input", update);
+  update();
+}
+if (TOUCH_DEVICE) document.getElementById("genNlog").max = "5.47";
+wireLogSlider("genNlog", "genNval", "genN");
+wireLogSlider("paramKlog", "paramKval", "paramK");
+// The k slider has step="any" so that the mouse reaches every integer k, which makes the arrow keys jump a
+// whole decade: they move it by 0.01 instead (about 2.3% in k).
+document.getElementById("paramKlog").addEventListener("keydown", e => {
+  const dir = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+  if (!dir) return;
+  e.preventDefault();
+  const r = e.target;
+  r.value = String(Math.min(parseFloat(r.max), Math.max(parseFloat(r.min), parseFloat(r.value) + 0.01 * dir)));
+  // it must bubble: the fieldset listener that turns the button into Train only sees bubbling events
+  r.dispatchEvent(new Event("input", { bubbles: true }));
+});
+
+(() => {
+  const r = document.getElementById("paramEpochs"), v = document.getElementById("paramEpochsVal");
+  const show = () => { v.textContent = r.value; };
+  r.addEventListener("input", show);
+  show();
+})();
+
+(() => {
+  const r = document.getElementById("paramItersRange"), box = document.getElementById("paramIters");
+  r.addEventListener("input", () => { box.value = r.value; });
+  box.addEventListener("input", () => {
+    const v = parseInt(box.value, 10);
+    if (Number.isFinite(v)) r.value = String(Math.min(25, Math.max(1, v)));
+  });
+})();
+
+</script>
+</div>
+<script id="emCodeScript">
+(function () {
+  var code = document.querySelector(".em-code"), paper = document.querySelector(".em-paper:not(.em-code)");
+  if (!code) return;
+  document.addEventListener("click", function (e) { if (code.open && !code.contains(e.target)) code.open = false; });
+  code.addEventListener("toggle", function () { if (code.open && paper) paper.open = false; });
+  if (paper) paper.addEventListener("toggle", function () { if (paper.open) code.open = false; });
+})();
+</script>
+<figure class="em-zoom" id="emZoom" role="dialog" aria-label="e-means logo, enlarged">
+  <img src="assets/emeans-wordmark.png?v=silk320" alt="e-means, clustered by e-means">
+  <figcaption>e-means, clustered by e-means: Visualization of the Voronoi cells</figcaption>
+</figure>
+<script>
+(function () {
+  var mark = document.querySelector(".em-mark"), zoom = document.getElementById("emZoom");
+  if (!mark || !zoom) return;
+  mark.addEventListener("click", function (e) { e.preventDefault(); zoom.classList.add("open"); });
+  zoom.addEventListener("click", function () { zoom.classList.remove("open"); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") zoom.classList.remove("open"); });
+})();
+</script>
+</body>
+</html>
