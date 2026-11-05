@@ -170,6 +170,11 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
 <style id="emCodeStyle">
   .em-code-pop{width:auto; white-space:nowrap;}
   .em-nav .em-code-pop a.em-code-link{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-size:13px; color:#1f77b4;}
+  /* phones: the pop-up spans the screen and its sentence wraps; the faiss path stays on one line */
+  @media (max-width: 600px){
+    .em-nav .em-code-pop{left:8px; right:8px; width:auto; white-space:normal;}
+    .em-nav .em-code-pop a.em-code-link{white-space:nowrap;}
+  }
 </style>
 <style id="pgHeroStyle">
   .pg-hero{padding:10px 0 11px; text-align:center;}
@@ -333,7 +338,7 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
         <details class="em-paper em-code">
           <summary>Code</summary>
           <div class="em-paper-pop em-code-pop">
-            <a class="em-code-link" href="https://github.com/swannbessa" target="_blank" rel="noopener">github.com/swannbessa</a>
+            e-means is available in faiss : <a class="em-code-link" href="https://github.com/facebookresearch/faiss/tree/main/contrib/e_means" target="_blank" rel="noopener">faiss/contrib/e_means</a>
           </div>
         </details>
       </nav>
