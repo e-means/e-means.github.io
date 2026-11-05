@@ -320,6 +320,7 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
       <a class="em-name" href="https://swannbessa.github.io/">Swann Bessa</a>
       <nav class="em-nav">
         <a href="./">Blog post</a>
+        <a href="playground.html" class="active">Playground</a>
         <details class="em-paper">
           <summary>Paper</summary>
           <div class="em-paper-pop">
@@ -334,7 +335,6 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
             <button type="button" class="secondary em-copy" id="emCopy">Copy citation</button>
           </div>
         </details>
-        <a href="playground.html" class="active">Playground</a>
         <details class="em-paper em-code">
           <summary>Code</summary>
           <div class="em-paper-pop em-code-pop">
@@ -1490,6 +1490,124 @@ function offscreen(w, h) {
   c.getContext("2d").scale(2, 2);
   return c;
 }
+// The centroids' Voronoi cells (Swann, 2026-11-05), drawn while there are at most VORONOI_MAX_K clusters; beyond
+// that they are too dense to read. Same look as the video's hero: only the edges, in the panel's colour at 55%
+// opacity, clipped to the data box, thinner lines from 200 clusters up.
+const VORONOI_MAX_K = 700;
+// Each cell starts as the data box and is cut by the bisector with each centroid that can still reach it: one
+// farther than twice the cell's current radius cannot. A grid of bins finds the candidates, nearest first, so the
+// cell shrinks fast and the search stops after a few cuts even where centroids crowd together. Returns segments
+// [xa, ya, xb, yb, ...] in data coordinates, each edge shared by two cells once, and none along the box itself.
+function voronoiEdges(xs, ys, K, bounds) {
+  const [x0, x1, y0, y1] = bounds;
+  const G = Math.max(1, Math.round(Math.sqrt(K / 2)));        // G x G bins, about 2 centroids each
+  const bw = (x1 - x0) / G || 1, bh = (y1 - y0) / G || 1, step = Math.min(bw, bh);
+  const bin = new Int32Array(K), start = new Int32Array(G * G + 1), items = new Int32Array(K);
+  for (let i = 0; i < K; i++) {
+    const gx = Math.min(G - 1, Math.max(0, Math.floor((xs[i] - x0) / bw)));
+    const gy = Math.min(G - 1, Math.max(0, Math.floor((ys[i] - y0) / bh)));
+    bin[i] = gy * G + gx;
+    start[bin[i] + 1]++;
+  }
+  for (let b = 0; b < G * G; b++) start[b + 1] += start[b];
+  const fill = start.slice(0, G * G);
+  for (let i = 0; i < K; i++) items[fill[bin[i]]++] = i;
+  // the cell's corners (px, py) and, for each, what the edge leaving it lies on (pl): a centroid's index, or -1 for
+  // the box; q* receive the cut cell, then the two swap
+  let cap = 64, px = new Float64Array(cap), py = new Float64Array(cap), pl = new Int32Array(cap);
+  let qx = new Float64Array(cap), qy = new Float64Array(cap), ql = new Int32Array(cap), side = new Float64Array(cap);
+  const cj = new Int32Array(K), cd = new Float64Array(K), out = [];   // a ring's candidates, nearest first
+  for (let i = 0; i < K; i++) {
+    const cx = xs[i], cy = ys[i], gx0 = bin[i] % G, gy0 = (bin[i] - gx0) / G;
+    px[0] = x0; py[0] = y0; px[1] = x1; py[1] = y0; px[2] = x1; py[2] = y1; px[3] = x0; py[3] = y1;
+    pl[0] = pl[1] = pl[2] = pl[3] = -1;
+    let n = 4, R2 = 0;
+    for (let v = 0; v < 4; v++) {
+      const ex = px[v] - cx, ey = py[v] - cy;
+      R2 = Math.max(R2, ex * ex + ey * ey);
+    }
+    for (let r = 0; r <= G && n; r++) {
+      if (r >= 2 && ((r - 1) * step) * ((r - 1) * step) >= 4 * R2) break;   // ring r is (r - 1) bins away
+      let nc = 0;
+      for (let gy = gy0 - r; gy <= gy0 + r; gy++) {
+        if (gy < 0 || gy >= G) continue;
+        const edgeRow = gy === gy0 - r || gy === gy0 + r;
+        for (let gx = gx0 - r; gx <= gx0 + r; gx += edgeRow ? 1 : 2 * r) {
+          if (gx < 0 || gx >= G) continue;
+          for (let t = start[gy * G + gx], e = start[gy * G + gx + 1]; t < e; t++) {
+            const j = items[t];
+            if (j === i) continue;
+            const ex = xs[j] - cx, ey = ys[j] - cy, dd = ex * ex + ey * ey;
+            if (dd <= 1e-24) continue;                      // a centroid on top of this one has no bisector
+            let k = nc++;                                   // insertion sort: rings hold a few dozen at most
+            while (k > 0 && cd[k - 1] > dd) { cd[k] = cd[k - 1]; cj[k] = cj[k - 1]; k--; }
+            cd[k] = dd; cj[k] = j;
+          }
+        }
+      }
+      for (let c = 0; c < nc; c++) {
+        if (cd[c] >= 4 * R2) break;                         // too far to reach the cell, like every later one
+        const j = cj[c];
+        if (n + 2 > cap) {                                  // a cut adds at most one corner
+          cap *= 2;
+          const nx = new Float64Array(cap), ny = new Float64Array(cap), nl = new Int32Array(cap);
+          nx.set(px.subarray(0, n)); ny.set(py.subarray(0, n)); nl.set(pl.subarray(0, n));
+          px = nx; py = ny; pl = nl;
+          qx = new Float64Array(cap); qy = new Float64Array(cap); ql = new Int32Array(cap);
+          side = new Float64Array(cap);
+        }
+        const dx = xs[j] - cx, dy = ys[j] - cy, mx = (cx + xs[j]) / 2, my = (cy + ys[j]) / 2;
+        let cuts = false;
+        for (let v = 0; v < n; v++) {
+          side[v] = (px[v] - mx) * dx + (py[v] - my) * dy;   // > 0: nearer centroid j, cut away
+          if (side[v] > 0) cuts = true;
+        }
+        if (!cuts) continue;
+        let m = 0;
+        for (let v = 0; v < n; v++) {
+          const w = v + 1 === n ? 0 : v + 1, sv = side[v], sw = side[w];
+          if (sv <= 0) { qx[m] = px[v]; qy[m] = py[v]; ql[m++] = pl[v]; }
+          if ((sv <= 0) !== (sw <= 0)) {
+            const f = sv / (sv - sw);
+            qx[m] = px[v] + f * (px[w] - px[v]); qy[m] = py[v] + f * (py[w] - py[v]);
+            ql[m++] = sv <= 0 ? j : pl[v];                  // leaving the cell: the new edge is the bisector with j
+          }
+        }
+        let t = px; px = qx; qx = t;
+        t = py; py = qy; qy = t;
+        const tl = pl; pl = ql; ql = tl;
+        n = m;
+        R2 = 0;
+        for (let v = 0; v < n; v++) {
+          const ex = px[v] - cx, ey = py[v] - cy, e2 = ex * ex + ey * ey;
+          if (e2 > R2) R2 = e2;
+        }
+        if (!n) break;
+      }
+    }
+    for (let v = 0; v < n; v++) {
+      if (pl[v] <= i) continue;  // the box, or an edge the other cell has already emitted
+      const w = v + 1 === n ? 0 : v + 1;
+      out.push(px[v], py[v], px[w], py[w]);
+    }
+  }
+  return out;
+}
+function drawVoronoi(ctx, cents, P, bounds, color) {
+  const K = cents.length / 2, xs = new Float64Array(K), ys = new Float64Array(K);
+  for (let i = 0; i < K; i++) { xs[i] = cents[2 * i]; ys[i] = cents[2 * i + 1]; }
+  const seg = voronoiEdges(xs, ys, K, bounds), a = [0, 0], b = [0, 0];
+  ctx.save();
+  ctx.globalAlpha = 0.55; ctx.strokeStyle = color; ctx.lineWidth = K >= 200 ? 0.8 : 1.35;
+  ctx.beginPath();
+  for (let s = 0; s < seg.length; s += 4) {
+    a[0] = seg[s]; a[1] = seg[s + 1]; b[0] = seg[s + 2]; b[1] = seg[s + 3];
+    const qa = toPx(a, P, bounds), qb = toPx(b, P, bounds);
+    ctx.moveTo(qa[0], qa[1]); ctx.lineTo(qb[0], qb[1]);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
 // cents: flat centroid array, d values per centroid (only the first two are drawn)
 function drawPanel(P, X2, cents, d, color, bounds) {
   const ctx = P.ctx;
@@ -1513,6 +1631,7 @@ function drawPanel(P, X2, cents, d, color, bounds) {
   }
   ctx.clearRect(0, 0, P.w, P.h);
   ctx.drawImage(panelBg.canvas, 0, 0, P.w, P.h);
+  if (d === 2 && cents.length / d <= VORONOI_MAX_K) drawVoronoi(ctx, cents, P, bounds, color);
   const dot = dotSprites[color], p = [0, 0];
   for (let j = 0; j < cents.length; j += d) {
     p[0] = cents[j]; p[1] = cents[j + 1];
