@@ -659,6 +659,14 @@
   <figcaption>Nine blobs in a 3&times;3 grid with heavier corners, <span class="e">k</span>&nbsp;=&nbsp;10. Lloyd leaves the centre blob without a centroid and crowds three into a corner. e-means falls into the same arrangement, then climbs out around epoch 10. Over 200 starts Lloyd stays stuck more than 1% worse on 43% of starts, while e-means is more than 1% worse on 4%.</figcaption>
 </figure>
 
+<figure>
+  <video autoplay muted loop playsinline preload="metadata" width="1000" height="420" style="width:100%; height:auto; display:block; border:1px solid var(--rule); border-radius:6px;" aria-label="Four blobs on a square around a heavier centre blob: Lloyd puts two centroids on one corner blob and strands one between two others, e-means gives every blob one">
+    <source src="assets/localmin_sqcentre_k5.webm" type="video/webm">
+    <source src="assets/localmin_sqcentre_k5.mp4" type="video/mp4">
+  </video>
+  <figcaption>Four blobs on a square around a heavier centre blob, <span class="e">k</span>&nbsp;=&nbsp;5. Lloyd puts two centroids on one corner blob and strands one in the gap between two others, which then share it. e-means, from the same start, gives every blob one. Over 200 starts Lloyd stays stuck on 15.5% of starts, while e-means stays stuck on 0% (15.5% and 3% on a second draw of the same data).</figcaption>
+</figure>
+
 <p>Our explanation for that is that mini-batches provide more noisy updates that are more likely to explore the optimization landscape and escape local minima. Lloyd, with its always decreasing loss, is more likely to exploit found local minima and never escape them.</p>
 
 <h2>Library and code</h2>
