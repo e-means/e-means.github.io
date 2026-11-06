@@ -219,6 +219,16 @@
     .readout{font-size:0.82em; min-height:4.65em;}
   }
 
+  /* phones (Swann, 2026-11-06): the hero in one column, Lloyd, e-means, then the loss chart, each at full width,
+     instead of the two plots squeezed side by side */
+  @media (max-width:600px){
+    #anim2d .anim-row{display:grid; grid-template-columns:1fr; gap:18px; overflow:visible;}
+    #anim2d .anim-row > div, #anim2d .anim-row > div:last-child{grid-column:auto; justify-self:center; width:100%;
+      max-width:340px;}
+    #anim2d .panel-title, #anim2d .anim-row > div:last-child .panel-title{display:block; height:auto; padding-bottom:6px;}
+    #anim2d .readout{min-height:0;}
+  }
+
   /* phone held sideways (short screen): a one-row header, and the plots sized so that they and the
      slider fit on the screen together */
   @media (max-height:500px) and (orientation:landscape) and (min-width:700px) and (max-width:1139px){
@@ -588,7 +598,7 @@
 <p class="footnote" style="margin-top:-0.6em; border-top:none; padding-top:0;">1 million vectors, <span class="e">k</span>&nbsp;=&nbsp;16,384, 5 epochs, mean over 5 seeds; only the revival policy varies. A cluster counts as dead when fewer than ten vectors are assigned to it at the end, a thousandth of an average cluster. Imbalance: how uneven the cluster sizes are (1 = all equal). From the paper&rsquo;s revival ablation table.</p>
 
 <h2 id="validation">Extensive experimental validation</h2>
-<p>We validated e-means on 24 different embedding and synthetic datasets and configurations (see <a href="#" title="link added on release">paper</a>). For more results, we provide a Colab notebook to run e-means against Lloyd k-means on any distribution, cluster count, and dataset size you give it, with the loss curves updating live as both run. See <a href="https://colab.research.google.com/github/e-means/e-means.github.io/blob/main/EMEANS_COLAB_DEMO.ipynb"><code>EMEANS_COLAB_DEMO.ipynb</code></a> alongside this post.</p>
+<p>We validated e-means on 24 different embedding and synthetic datasets and configurations (see <a href="#" title="link added on release">paper</a>).</p>
 
 <figure>
   <img src="assets/paper_epochs_3arm.png" width="2568" height="1050" loading="lazy" decoding="async" alt="Convergence curves vs Lloyd at 25 iterations">
