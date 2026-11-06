@@ -126,6 +126,23 @@ button:disabled{opacity:0.4; cursor:default;}
 .linslider{display:inline-flex; align-items:center; gap:8px;}
 .math{font-family:"Times New Roman",Times,serif; font-style:italic; font-size:1.12em;}
 .footnote{font-size:0.78em; color:var(--ink-2); font-weight:normal; margin-top:18px;}
+/* the settings of the run and the notes, folded away: a quiet line with a chevron that turns when open */
+.more-info{margin-top:14px; font-size:0.88em; color:var(--ink-2);}
+.more-info summary{display:inline-flex; align-items:center; gap:7px; cursor:pointer; list-style:none;
+  padding:2px 0; user-select:none;}
+.more-info summary::-webkit-details-marker{display:none;}
+.more-info summary:hover, .more-info[open] summary{color:var(--ink);}
+.more-info summary:focus-visible{outline:2px solid var(--emablue); outline-offset:3px; border-radius:3px;}
+.more-info .chev{width:6px; height:6px; border-right:1.6px solid currentColor;
+  border-bottom:1.6px solid currentColor; transform:rotate(-45deg); transition:transform .15s ease;}
+.more-info[open] .chev{transform:rotate(45deg) translate(-1px, -1px);}
+.more-box{margin-top:8px; border:1px solid var(--rule); border-radius:8px; background:#fcfcfd;
+  padding:10px 14px 12px;}
+.more-box .run-info{white-space:pre-wrap; line-height:1.5;}
+.more-box .run-info:empty{display:none;}
+.more-box .footnote{font-size:1em; margin:8px 0 0; line-height:1.5;}
+.more-box .run-info:empty + .footnote{margin-top:0;}
+@media (prefers-reduced-motion: reduce){.more-info .chev{transition:none;}}
 .linslider input[type=range]{width:104px;}
 .controls{display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; margin:2px 0 0;}
 /* one button: Train / Pause / Resume; wide enough for its longest label ("Preparing…") so the slider does
@@ -144,6 +161,14 @@ button:disabled{opacity:0.4; cursor:default;}
 .slider-col{display:flex; flex-direction:column; align-items:center; gap:4px; flex:0 1 320px; min-width:0;}
 .slider-col input[type=range]{width:100%}
 .slider-label{font-size:0.85em; color:var(--ink-2)}
+.slider-label .eps .e, .slider-label .eps .l{white-space:nowrap;}
+.slider-label .eps .e{color:var(--emablue);} .slider-label .eps .l{color:var(--emared);}
+/* the CPU time and both epochs read as one line (Swann, 2026-11-06): a wider column for it, never broken */
+@media (min-width: 601px){.cpu-timed .slider-col{flex-basis:440px;} .slider-label{white-space:nowrap;}}
+/* phones: the epochs get their own line under the CPU time, without the separator */
+/* (on a phone the method names go too: the colours already say which number is which) */
+@media (max-width: 600px){.slider-label .eps{display:block;} .slider-label .eps .sep{display:none;}
+  .slider-label .eps .nm{display:none;}}
 /* playback slider, like a video player: played | computed | not computed yet */
 /* drawn on the input itself, so it repaints whenever --pf/--bf change; --be lets the computed part
    reach the right edge once training is done (the thumb-centre mapping alone stops 7 px short) */
@@ -391,6 +416,59 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
     justify-content:center; column-gap:12px; row-gap:2px;}
 }
 </style>
+<style id="raceStyle">
+/* ===== The race on one clock (Swann, 2026-11-05; calm finish 2026-11-06). With "Enable CPU timings" checked, the
+   title line of each cluster plot carries a small grey clock on its right: the method's CPU time so far. When the
+   method finishes, the clock settles where it is to a check mark and the total, in the method's colour. Nothing is
+   drawn over the plots. ===== */
+.panel-title > span:first-child{white-space:nowrap;}
+.panel-title .clock{margin-left:auto; padding-left:10px; display:inline-flex; align-items:center; gap:5px; flex:none;
+  font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ink-2); transition:color .45s ease;}
+.panel-title .clock:empty{display:none;}
+.panel-title .clock svg{display:block; flex:none; color:#a2a2a9;}
+/* the finish: the clock settles where it is, to a check mark and the total, in its method's colour */
+.panel-title.lloyd .clock.done{color:var(--emared);}
+.panel-title.ema .clock.done{color:var(--emablue);}
+.panel-title .clock.done svg{color:currentColor;}
+.panel-title .clock.settle svg{animation:ckIn .45s ease both;}
+@keyframes ckIn{from{opacity:0;} to{opacity:1;}}
+.panel-title .clock .ck-ff{font-weight:500; font-size:0.9em; letter-spacing:0.01em; color:var(--ink-2);}
+.panel-title .clock.ff-short .ck-ff{display:none;}
+.stage{position:relative;}
+@media (max-width: 419px){body.cpu-timed .panel-title.lloyd .km{display:none;}}
+/* the narrowest phones: the clock drops its stopwatch while running, to fit beside "e-means" */
+@media (max-width: 379px){
+  .panel-title .clock{padding-left:6px; gap:3px;}
+  .panel-title .clock.run svg{display:none;}
+}
+@media (prefers-reduced-motion: reduce){
+  .panel-title .clock{transition:none;}
+  .panel-title .clock.settle svg{animation:none;}
+}
+.footnote a{color:var(--emablue); text-decoration:none;}
+.footnote a:hover{text-decoration:underline;}
+</style>
+<style id="toggleStyle">
+/* ===== "Enable CPU timings" (Swann, 2026-11-06): a training setting, read at Train like the others. On a computer it
+   takes a quiet line of its own under the sliders; on a phone it is one line among the settings, before Play speed.
+   The body carries .cpu-timed while the run on screen is timed (before any run, while the box is checked): the
+   title clocks and the note's timing sentence show only then. ===== */
+.opt-line{flex:1 0 100%; order:1; display:flex; margin:0 0 3px;}
+.checkopt{display:inline-flex; align-items:center; gap:7px; cursor:pointer; user-select:none; -webkit-user-select:none;}
+.checkopt input{margin:0; width:14px; height:14px; flex:none; cursor:pointer;}
+.checkopt:hover{color:var(--ink);}
+.timing-only{display:none;}
+.cpu-timed .timing-only{display:inline;}
+body:not(.cpu-timed) .panel-title .clock{display:none;}
+@media (max-width: 600px){
+  .opt-line{display:block; margin:0; padding:4px 0 3px;}
+  .checkopt{margin:0; line-height:1.25;}
+}
+@media (pointer: coarse){
+  .checkopt{min-height:44px; gap:10px;}
+  .checkopt input{width:20px; height:20px;}
+}
+</style>
 <meta name="description" content="Compare e-means with Lloyd k-means on 2D synthetic distributions">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://e-means.github.io/playground.html">
@@ -510,6 +588,7 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
     <span class="logval" id="paramKval">500</span>
     <input type="hidden" id="paramK" value="500">
   </label>
+  <div class="opt-line"><label class="checkopt" title="Trains both methods on the same number of threads, times them, and replays them on one clock of CPU time. The results do not change."><input type="checkbox" id="paramTiming">Enable CPU timings</label></div>
   <label class="speedslider" title="Slows the replay down. Training and the results are not affected.">Play speed
     <input type="range" id="playSpeed" min="0.1" max="1" step="0.05" value="1" aria-label="Replay speed">
     <span class="speedval" id="playSpeedVal">1&times;</span>
@@ -521,20 +600,20 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
   <button id="startBtn" data-mode="train" aria-disabled="false">&#9654;&#xFE0E; Train</button>
   <div class="slider-col">
     <input type="range" min="0" max="1" step="0.01" value="0" aria-label="Playback position in epochs" disabled>
-    <div class="slider-label">epochs: <span class="val">0.00</span><span class="wait"></span></div>
+    <div class="slider-label"><span class="lab">epochs: </span><span class="val">0.00</span><span class="unit"></span><span class="eps"></span><span class="wait"></span></div>
   </div>
 </div>
 
 <div class="anim-row" id="animRow" style="display:none;">
   <div class="anim-panels">
   <div>
-    <div class="panel-title lloyd"><span>Lloyd<span class="pt-more"> (full batch)</span></span></div>
-    <canvas class="left" width="320" height="320"></canvas>
+    <div class="panel-title lloyd"><span>Lloyd<span class="km"> k-means</span></span><span class="clock" aria-hidden="true"></span></div>
+    <div class="stage" data-m="lloyd"><canvas class="left" width="320" height="320"></canvas></div>
     <div class="readout" data-r="lloyd"></div>
   </div>
   <div>
-    <div class="panel-title ema"><span>e-means<span class="pt-more"> (scaling-law batch + step)</span></span></div>
-    <canvas class="right" width="320" height="320"></canvas>
+    <div class="panel-title ema"><span>e-means</span><span class="clock" aria-hidden="true"></span></div>
+    <div class="stage" data-m="ema"><canvas class="right" width="320" height="320"></canvas></div>
     <div class="readout" data-r="ema"></div>
   </div>
   <div>
@@ -548,7 +627,7 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
     </div>
   </div>
   <div class="chart-legend panel-key" role="list" aria-label="Key to the Lloyd and e-means plots">
-    <span class="legend-item pk-pts" role="listitem" tabindex="0" data-tip="A sample of the points both methods learn from"><svg width="15" height="11" viewBox="0 0 15 11" aria-hidden="true" fill="#8e8e95"><rect x="0.4" y="4.6" width="2.2" height="2.2"/><rect x="4.3" y="1" width="2.2" height="2.2"/><rect x="5.8" y="7.8" width="2.2" height="2.2"/><rect x="9.7" y="4.2" width="2.2" height="2.2"/><rect x="12.8" y="0.6" width="2.2" height="2.2"/><rect x="12.6" y="8.4" width="2.2" height="2.2"/></svg>training points</span>
+    <span class="legend-item pk-pts" role="listitem" tabindex="0" data-tip="The points both methods learn from"><svg width="15" height="11" viewBox="0 0 15 11" aria-hidden="true" fill="#8e8e95"><rect x="0.4" y="4.6" width="2.2" height="2.2"/><rect x="4.3" y="1" width="2.2" height="2.2"/><rect x="5.8" y="7.8" width="2.2" height="2.2"/><rect x="9.7" y="4.2" width="2.2" height="2.2"/><rect x="12.8" y="0.6" width="2.2" height="2.2"/><rect x="12.6" y="8.4" width="2.2" height="2.2"/></svg>training points</span>
     <span class="legend-item pk-cents" role="listitem" tabindex="0" data-tip="The cluster centers, red for Lloyd and blue for e-means"><svg width="18" height="10" viewBox="0 0 18 10" aria-hidden="true" stroke="#fff" stroke-width="1.1"><circle cx="4.85" cy="5" r="4.2" fill="#d62728"/><circle cx="13.15" cy="5" r="4.2" fill="#1f77b4"/></svg>centroids</span>
     <span class="legend-item pk-cells" role="listitem" tabindex="0" data-tip="The region closest to each centroid"><svg width="22" height="12" viewBox="0 0 22 12" aria-hidden="true" fill="none" stroke-width="1.1" stroke-linejoin="round" stroke-opacity="0.8"><path stroke="#d62728" d="M1 2.6 L7 0.8 L9.4 6.4 L5.6 11.2 L0.6 8.8 Z"/><path stroke="#1f77b4" d="M12.6 1.4 L18.8 0.9 L21.4 5.8 L18.6 11 L11.8 9.6 L11.2 5.2 Z"/></svg><span class="pk-term">Voronoi cells</span></span>
     <span class="legend-item pk-note" role="listitem" tabindex="0" data-tip="With this many clusters the cells are too small to draw"><svg width="22" height="12" viewBox="0 0 22 12" aria-hidden="true" fill="none" stroke-width="1.1" stroke-linejoin="round" stroke-opacity="0.8"><path stroke="#d62728" d="M1 2.6 L7 0.8 L9.4 6.4 L5.6 11.2 L0.6 8.8 Z"/><path stroke="#1f77b4" d="M12.6 1.4 L18.8 0.9 L21.4 5.8 L18.6 11 L11.8 9.6 L11.2 5.2 Z"/></svg><span>cells hidden above <span class="pk-max">700</span> clusters</span></span>
@@ -557,16 +636,25 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
 </div>
 <div class="result-box" id="resultBox" style="display:none;"></div>
 <div id="statusBox" class="status"></div>
-
+<details class="more-info" hidden>
+<summary><span class="chev" aria-hidden="true"></span>Click here for additional info</summary>
+<div class="more-box">
+<div id="runInfo" class="run-info"></div>
 <p class="footnote">Note: e-means runs here with dead-cluster revival switched off, because on very
 low-dimensional data such as these 2-D sets revival degrades its results. Lloyd still re-seeds
 empty clusters as usual. Initialization is done with random sampling from the dataset.
-The batch size used is B/8, where B is the batch given by the default scaling law.</p>
+The batch size used is B/8, where B is the batch given by the default scaling law.
+<span class="timing-only">The animation is smoothed, but the training times are measured faithfully (see the
+<a href="https://github.com/e-means/e-means.github.io/blob/main/playground.html" target="_blank"
+rel="noopener">source code</a>).</span></p>
 <p class="footnote touch-note">On phones and tablets this page keeps runs small, so that the tab
 fits in a phone's memory and a run takes about a minute: <i class="math">n</i> stops at about 300,000 points, a
 run may do at most 3 times the work of the default one (<i class="math">n</i> &times; <i class="math">k</i>
 &times; all epochs up to 4.5 billion), and training uses at most 4 threads. None of this changes the results.
 For bigger runs, use a computer.</p>
+</div>
+</details>
+
 
 <script>
 "use strict";
@@ -1068,11 +1156,21 @@ self.onmessage = function (e) {
     let totalSq = 0, b = 0, left = self._blocks[0];
     for (let i = 0, xOff = 0; i < len; i++, xOff += d) {
       let best = 0, bestKey = Infinity;
-      for (let j = 0, cOff = 0; j < K; j++, cOff += d) {
-        let dot = 0;
-        for (let t = 0; t < d; t++) dot = Math.fround(dot + Math.fround(Xr[xOff + t] * Cr[cOff + t]));
-        const key = Math.fround(cn[j] - 2 * dot);
-        if (key < bestKey) { bestKey = key; best = j; }
+      if (d === 2) {
+        // d = 2 written out, as in the training worker: the same sums in the same order, so the same codes
+        const x0 = Xr[xOff], x1 = Xr[xOff + 1];
+        for (let j = 0, cOff = 0; j < K; j++, cOff += 2) {
+          const dot = Math.fround(Math.fround(0 + Math.fround(x0 * Cr[cOff])) + Math.fround(x1 * Cr[cOff + 1]));
+          const key = Math.fround(cn[j] - 2 * dot);
+          if (key < bestKey) { bestKey = key; best = j; }
+        }
+      } else {
+        for (let j = 0, cOff = 0; j < K; j++, cOff += d) {
+          let dot = 0;
+          for (let t = 0; t < d; t++) dot = Math.fround(dot + Math.fround(Xr[xOff + t] * Cr[cOff + t]));
+          const key = Math.fround(cn[j] - 2 * dot);
+          if (key < bestKey) { bestKey = key; best = j; }
+        }
       }
       codes[i] = best;
       let s = 0;
@@ -1195,44 +1293,164 @@ function trainThreads() {
   return Number.isFinite(q) && q >= 1 ? Math.min(q, TRAIN_THREADS_MAX) : TRAIN_THREADS_MAX;
 }
 
-const EMA_POOL_MIN_WORK = 60000;
-// With one training thread the pool cannot split a batch, but it still takes a big e-means step off the main
-// thread: above this batch x k a step there costs over ~35 ms (two frames), and the hand-off ~3%.
-const EMA_POOL_SOLO_WORK = 4e6;
+// A job brings the centroids already rounded to bf16 (Cr) with their norms (cn), prepared on the main thread
+// (prepBf16Centroids, the same arithmetic as here before), or null for both when the worker holds them already (the
+// next rows of one Lloyd pass, see TrainPool).
 const _trainWorkerSrc = `
-let Xr = null, d = 0, perm = null;
-const F = new Float32Array(1), U = new Uint32Array(F.buffer);
-const bf = v => { F[0] = v; const u = U[0]; U[0] = ((u + 0x7FFF + ((u >>> 16) & 1)) >>> 0) & 0xFFFF0000; return F[0]; };
+let Xr = null, d = 0, perm = null, heldCr = null, heldCn = null;
 self.onmessage = e => {
   const m = e.data;
   if (m.type === "init") { Xr = new Float32Array(m.Xr); d = m.d; return; }
   if (m.type === "perm") { perm = new Int32Array(m.perm); return; }
-  const C = new Float64Array(m.C), K = m.K;
-  const Cr = new Float64Array(C.length);
-  for (let i = 0; i < C.length; i++) Cr[i] = bf(C[i]);
-  const cn = new Float64Array(K);
-  for (let j = 0, off = 0; j < K; j++, off += d) {
-    let s = 0;
-    for (let t = 0; t < d; t++) s = Math.fround(s + Math.fround(Cr[off + t] * Cr[off + t]));
-    cn[j] = s;
-  }
+  const t0 = performance.now();   // this job's own computation, timed here in the worker
+  if (m.Cr) { heldCr = new Float64Array(m.Cr); heldCn = new Float64Array(m.cn); }
+  const Cr = heldCr, cn = heldCn, K = m.K;
   const len = m.b - m.a, codes = new Int32Array(len);
-  for (let i = 0; i < len; i++) {
-    const xOff = (m.usePerm ? perm[m.a + i] : m.a + i) * d;
-    let best = 0, bestKey = Infinity;
-    for (let j = 0, cOff = 0; j < K; j++, cOff += d) {
-      let dot = 0;
-      for (let t = 0; t < d; t++) dot = Math.fround(dot + Math.fround(Xr[xOff + t] * Cr[cOff + t]));
-      const key = Math.fround(cn[j] - 2 * dot);
-      if (key < bestKey) { bestKey = key; best = j; }
+  if (d === 2) {
+    // d = 2 (every set on this page) written out: the same sums in the same order as the loop below, so the same
+    // codes, without its two-step inner loop, which V8 (Chrome's engine) ran 1.6 to 2.8 times slower
+    for (let i = 0; i < len; i++) {
+      const xOff = (m.usePerm ? perm[m.a + i] : m.a + i) * 2, x0 = Xr[xOff], x1 = Xr[xOff + 1];
+      let best = 0, bestKey = Infinity;
+      for (let j = 0, cOff = 0; j < K; j++, cOff += 2) {
+        const dot = Math.fround(Math.fround(0 + Math.fround(x0 * Cr[cOff])) + Math.fround(x1 * Cr[cOff + 1]));
+        const key = Math.fround(cn[j] - 2 * dot);
+        if (key < bestKey) { bestKey = key; best = j; }
+      }
+      codes[i] = best;
     }
-    codes[i] = best;
+  } else {
+    for (let i = 0; i < len; i++) {
+      const xOff = (m.usePerm ? perm[m.a + i] : m.a + i) * d;
+      let best = 0, bestKey = Infinity;
+      for (let j = 0, cOff = 0; j < K; j++, cOff += d) {
+        let dot = 0;
+        for (let t = 0; t < d; t++) dot = Math.fround(dot + Math.fround(Xr[xOff + t] * Cr[cOff + t]));
+        const key = Math.fround(cn[j] - 2 * dot);
+        if (key < bestKey) { bestKey = key; best = j; }
+      }
+      codes[i] = best;
+    }
   }
-  self.postMessage({ codes, a: m.a }, [codes.buffer]);
+  self.postMessage({ codes, a: m.a, ms: performance.now() - t0 }, [codes.buffer]);
 };`;
+// ---- Timing (Swann, 2026-11-05). The clocks count CPU time: each training worker times its own computation and
+// the main thread times its own share of a step. Handing work over (copying, posting, waiting for a reply) is left
+// out, for both methods, since one thread would not pay it. Both methods train in the same pool, on the same number
+// of workers at a time (trainLayout), and never on more workers than there are cores to spare (raceThreads), so the
+// summed time is what one thread would take, as long as each worker has a full-speed core to itself.
+// It does not always: the page drawing the replay, the browser, other programs, or a slower core can take a worker's
+// core for a while, and the worker's clock keeps running. A long job is stretched by every slice it waits; a job of a
+// millisecond mostly runs inside one slice, and if stretched is run again (below). So both methods send the same jobs:
+// Lloyd's pass goes to the workers in rounds of e-means' batch, each split over the workers as an e-means step is and
+// awaited before the next (LloydTrainer.round). And work that one thread would do once per set of centroids, rounding
+// them to bf16 and their norms, is done once, on the main thread, not again by each worker for each job. Measured in
+// Firefox with cores scarce or shared: sent as one long job per worker, Lloyd read 1.02 to 1.99 times e-means' cost
+// per epoch (0.94 with cores to spare); sent in rounds, 0.88 to 0.95 (0.92 with cores to spare).
+// A measurement can still be stretched by something other than computing: another program taking the core, the
+// browser pausing the page, a garbage collection. Anything that may have paused the page (the tab going to the
+// background, the page being frozen or put away) bumps timingInterrupts, and a worker job that overlapped it is
+// run again; so is every job of a method's first step (nothing to compare it with yet), and later a job far slower
+// than its own method's recent ones (JobStats). A main-thread share cannot be run again (it changes the centroids),
+// and one far slower than usual counts as the usual time instead (guardMs).
+let timingInterrupts = 0;
+for (const ev of ["visibilitychange", "freeze", "resume"]) document.addEventListener(ev, () => { timingInterrupts++; });
+for (const ev of ["pagehide", "pageshow"]) window.addEventListener(ev, () => { timingInterrupts++; });
+// The timer's grain. Browsers coarsen performance.now(): to 0.1 ms in Chrome, 1 ms in Safari and Firefox, 16.7 ms in
+// Firefox's and Tor's anti-fingerprinting mode. Read once, as the median of a few steps of the clock (at most 0.15 s,
+// only that long on the coarsest clocks). A job shorter than the grain reads 0 or one grain, which is right only on
+// average: on a 4 ms clock the race reads as on a fine one, but on a 16.7 ms clock Lloyd's epoch at e-means' 4.00
+// read anywhere from 4.3 to 6.7 (against 4.4 on a fine clock).
+let _timerGrain = NaN;
+function timerGrainMs() {
+  if (!(_timerGrain >= 0)) {
+    const steps = [];
+    let last = performance.now();
+    const end = last + 150;
+    while (steps.length < 5) {
+      const t = performance.now();
+      if (t !== last) { steps.push(t - last); last = t; }
+      if (t > end) break;
+    }
+    steps.sort((x, y) => x - y);
+    _timerGrain = steps.length ? steps[steps.length >> 1] : 0;
+  }
+  return _timerGrain;
+}
+// One method's recent measurements of one kind (its worker jobs, its main-thread shares, its shuffles), in ms per
+// unit of work (rows, or rows x clusters). Above 2.5 times the usual rate, plus two grains of the timer (2 ms on a
+// 1 ms timer, never less), a measurement counts as stretched. On a coarser timer a short job reads either 0 or a whole
+// grain; a fixed 2 ms took every such reading for a stretched one, ran it again and kept the 0, so a method of short
+// jobs read almost no time at all. The usual rate is the larger of the median of the last 63 (which follows a
+// lasting change of speed, such as a laptop slowing down to save power) and the mean of the times kept (which a
+// coarse timer cannot bias). Nothing is judged before `warm` measurements.
+class JobStats {
+  constructor(warm) {
+    this.warm = warm; this.rates = []; this.ms = 0; this.units = 0; this.calls = 0;
+    this.slack = 2 * Math.max(1, timerGrainMs());
+  }
+  limit(units) {
+    if (this.rates.length < this.warm) return Infinity;
+    const s = this.rates.slice().sort((x, y) => x - y);
+    return 2.5 * units * Math.max(s[s.length >> 1], this.ms / this.units) + this.slack;
+  }
+  typical(units) { return this.units > 0 ? units * this.ms / this.units : 0; }
+  note(raw, kept, units) {
+    this.rates.push(raw / units);
+    if (this.rates.length > 63) this.rates.shift();
+    this.ms += kept; this.units += units;
+  }
+}
+function guardMs(tr, st, ms, units) {
+  let kept = ms;
+  if (ms > st.limit(units)) { tr.retimed++; kept = st.typical(units); }
+  st.note(ms, kept, units);
+  return kept;
+}
+// Workers per method. A computer reports logical threads (navigator.hardwareConcurrency), and on most laptops two of
+// them share one core (hyperthreading), or some cores are slower ones (phones, recent laptops): a worker sharing a
+// core, or on a slow one, takes longer, so the summed time reads too long (1.9 times on 2 cores of 2 threads with 3
+// workers). The page cannot tell, so it assumes the worst: half the threads are full cores, and the workers take at
+// most half of those, leaving the rest to the page drawing the replay and to the browser. Measured on the default run
+// against the same page on one worker (5 to 6 interleaved runs each, the browser pinned to the cores named):
+//   4 cores x 2 threads:  2 workers (this rule) Lloyd +8%, e-means +10%   3 workers +20%, +29%
+//   6 cores x 2 threads:  3 workers (this rule) Lloyd +4%, e-means +11%
+//   8 cores, 1 thread each:  3 workers  Lloyd +0%, e-means +3%
+// and one worker reads what the same training takes on the main thread (Lloyd -1%, e-means -2%). A ?threads=N in the
+// address is used as given.
+function raceThreads() {
+  const q = parseInt(new URLSearchParams(typeof location !== "undefined" ? location.search : "").get("threads"), 10);
+  if (Number.isFinite(q) && q >= 1) return trainThreads();
+  const hc = (typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 2;
+  return Math.max(1, Math.min(TRAIN_THREADS_MAX, Math.floor(hc / 4)));
+}
+// A small worker job spends a visible share of its time waking its thread and refilling its caches, work that one
+// thread would not do and that the clocks would count. So a job does at least POOL_JOB_WORK distance computations
+// (rows x clusters). Measured on 8 cores, e-means split into jobs of 100,000 read 2% above one worker, of 50,000 5%,
+// of 13,000 20%. Lloyd's jobs are far bigger.
+const POOL_JOB_WORK = 80000;
+// Without timings ("Enable CPU timings" unchecked) training is laid out as before the timing work: the whole pool,
+// and e-means in it only when there are several threads and its batch x k reaches EMA_POOL_MIN_WORK, or when a
+// step is big enough to stall playback on the main thread. With one training thread the pool cannot split a batch,
+// but it still takes a big e-means step off the main thread: above this batch x k a step there costs over ~35 ms
+// (two frames), and the hand-off ~3%.
+const EMA_POOL_MIN_WORK = 60000;
+const EMA_POOL_SOLO_WORK = 4e6;
+// Where each method trains, and on how many workers at a time. Both methods train in the worker pool, even on a
+// single worker: the same code, timed the same way, and it never freezes the page. For a fair race both use the same
+// number of workers at a time (`width`): as many as one e-means step keeps busy (one per POOL_JOB_WORK), at most
+// nThreads.
+function trainLayout(B, K, nThreads) {
+  return { emaOnPool: true, width: Math.max(1, Math.min(nThreads, Math.floor(B * K / POOL_JOB_WORK))) };
+}
 class TrainPool {
   constructor(XrF32, d, N) {
-    this.N = N;
+    this.N = N; this.d = d;
+    this.width = N;   // workers used at a time (see trainLayout)
+    // timed (the race): calls split by POOL_JOB_WORK, suspicious jobs run again. Not timed: every call split over
+    // all N workers and nothing run twice, as before the timing work
+    this.timed = true;
+    this.lastMs = 0; this.lastRetimed = 0;
     this.workers = [];
     const url = URL.createObjectURL(new Blob([_trainWorkerSrc], { type: "application/javascript" }));
     for (let w = 0; w < N; w++) {
@@ -1246,23 +1464,84 @@ class TrainPool {
     for (const w of this.workers) { const c = p.slice(); w.postMessage({ type: "perm", perm: c.buffer }, [c.buffer]); }
   }
 
-  assign(C, K, a, b, usePerm, codesOut) {
-    const chunk = Math.ceil((b - a) / this.N), jobs = [];
-    this.workers.forEach((w, i) => {
+  // Rows a..b-1, split over at most `width` workers, and over no more than one per POOL_JOB_WORK distance computations
+  // (rows x clusters): [worker, first row, end] per job.
+  _split(K, a, b) {
+    const nj = !this.timed ? this.N
+      : Math.max(1, Math.min(this.width, this.N, Math.floor((b - a) * K / POOL_JOB_WORK)));
+    const chunk = Math.ceil((b - a) / nj), parts = [];
+    this.workers.slice(0, nj).forEach((w, i) => {
       const s = a + i * chunk, e = Math.min(b, s + chunk);
-      if (s >= e) return;
-      jobs.push(new Promise((res, rej) => {
-        w.onmessage = ev => res(ev.data);
-        w.onerror = ev => { ev.preventDefault(); rej(new Error("training worker failed: " + (ev.message || "unknown error"))); };
-        w.onmessageerror = () => rej(new Error("training worker sent an unreadable message"));
-        const Cc = C.slice();
-        w.postMessage({ type: "assign", C: Cc.buffer, K, a: s, b: e, usePerm }, [Cc.buffer]);
-      }));
+      if (s < e) parts.push([w, s, e]);
     });
-    return Promise.all(jobs).then(rs => { for (const r of rs) codesOut.set(r.codes, r.a - a); return codesOut; });
+    return parts;
+  }
+  // Before the race: untimed rounds of the race's own shape (rows 0..B-1, split as an e-means step), alternately
+  // through an order (as e-means reads its rows) and in order (as Lloyd does). A browser compiles the worker's code
+  // in stages while it runs, so its first calls run slower, and the first method on each path paid for it (re-running
+  // a method's first step did not cover it): without these rounds the first epoch read 1.26 to 1.31 times the later
+  // ones for Lloyd in V8, and 1.44 to 1.48 for e-means in JavaScriptCore; with them, 1.02 to 1.19 for both methods in
+  // both engines. Nothing here is timed or kept, and the run's random numbers are not touched.
+  async warmUp(C, K, B, rounds) {
+    const prep = prepBf16Centroids(C, K, this.d);
+    this.setPerm(Int32Array.from({ length: B }, (_, i) => i));
+    for (let r = 0; r < rounds; r++) {
+      await Promise.all(this._split(K, 0, B).map(([w, s, e]) => this._job(w, prep, K, s, e, r % 2 === 0)));
+    }
+  }
+  // Rows a..b-1 against the centroids `prep` ({ Cr, cn }: rounded to bf16, and their norms, see prepBf16Centroids),
+  // split as above. A worker already holding this prep (the earlier rounds of the same Lloyd pass) is not sent it.
+  // Each worker sends its own computing time with its codes: lastMs is their sum, the CPU time of this assignment.
+  // A job that may have been stretched is run again, on the same workers side by side as before, and the shorter
+  // time kept, since a measurement can only be too long: every job of the caller's first call (`stats`, nothing to
+  // compare it with yet), a job that overlapped the tab going to the background (tried up to 3 times, once the tab is
+  // back), and a job far slower than the caller's recent ones. lastRetimed counts them. The assignment is
+  // deterministic, so the codes are the same.
+  assign(prep, K, a, b, usePerm, codesOut, stats) {
+    const st = stats || this._stats || (this._stats = new JobStats(1));
+    const jobs = this._split(K, a, b).map(([w, s, e]) => this._job(w, prep, K, s, e, usePerm));
+    const first = st.calls++ === 0;
+    return Promise.all(jobs).then(async rs => {
+      let again = !this.timed ? [] : rs.filter(r => first || !r.clean || r.ms > st.limit((r.e - r.s) * K)), n = 0;
+      for (let tries = 0; again.length && tries < 3; tries++) {
+        while (document.hidden) await new Promise(res => document.addEventListener("visibilitychange", res, { once: true }));
+        const redo = await Promise.all(again.map(r => this._job(r.w, prep, K, r.s, r.e, usePerm)));
+        n += redo.length;
+        again.forEach((r, i) => { r.ms = Math.min(r.ms, redo[i].ms); });
+        again = again.filter((r, i) => !redo[i].clean);
+      }
+      let ms = 0;
+      for (const r of rs) {
+        st.note(r.ms, r.ms, (r.e - r.s) * K);
+        ms += r.ms;
+        codesOut.set(r.codes, r.a - a);
+      }
+      this.lastMs = ms; this.lastRetimed = n;
+      return codesOut;
+    });
+  }
+  // The message has the same fields whether it brings the centroids or not (null): JavaScriptCore (Safari's engine)
+  // recompiled the worker for a second shape of message, and e-means' first epoch, its first jobs with centroids after
+  // Lloyd's rounds without, read double.
+  _job(w, prep, K, s, e, usePerm) {
+    return new Promise((res, rej) => {
+      const serial = timingInterrupts, hidden = document.hidden;
+      w.onmessage = ev => res({ codes: ev.data.codes, a: ev.data.a, ms: ev.data.ms, w, s, e,
+        clean: !hidden && !document.hidden && serial === timingInterrupts });
+      w.onerror = ev => { ev.preventDefault(); rej(new Error("training worker failed: " + (ev.message || "unknown error"))); };
+      w.onmessageerror = () => rej(new Error("training worker sent an unreadable message"));
+      if (w.held === prep) { w.postMessage({ type: "assign", Cr: null, cn: null, K, a: s, b: e, usePerm }); return; }
+      w.held = prep;
+      const Cr = prep.Cr.slice(), cn = prep.cn.slice();
+      w.postMessage({ type: "assign", Cr: Cr.buffer, cn: cn.buffer, K, a: s, b: e, usePerm }, [Cr.buffer, cn.buffer]);
+    });
   }
   terminate() { for (const w of this.workers) w.terminate(); this.workers = []; }
 }
+
+// Untimed rounds before a timed race (TrainPool.warmUp). From 4 to 32 rounds the race read alike in V8 and
+// JavaScriptCore (no more is gained up to 128); 8 rounds take about 0.1 s.
+const WARMUP_ROUNDS = 8;
 
 window.__trainPoolBench = async function (n, K, B, N, reps) {
   const X = flattenRows(GENERATORS.gaussian_blobs(n, K, 2, 3));
@@ -1271,9 +1550,12 @@ window.__trainPoolBench = async function (n, K, B, N, reps) {
   const pool = new TrainPool(Float32Array.from(Xr), 2, N), perm = shuffledIndices(mulberry32(5), n);
   pool.setPerm(perm);
   const out = new Int32Array(B);
-  await pool.assign(C, K, 0, B, true, out);
+  await pool.assign(prepBf16Centroids(C, K, 2), K, 0, B, true, out);
   let t0 = performance.now();
-  for (let r = 0; r < reps; r++) await pool.assign(C, K, (r * B) % (n - B), (r * B) % (n - B) + B, true, out);
+  for (let r = 0; r < reps; r++) {
+    const off = (r * B) % (n - B);
+    await pool.assign(prepBf16Centroids(C, K, 2), K, off, off + B, true, out);
+  }
   const poolMs = (performance.now() - t0) / reps;
   t0 = performance.now();
   for (let r = 0; r < reps; r++) {
@@ -1295,8 +1577,8 @@ window.__trainPoolCheck = async function (n, K, N) {
   pool.setPerm(perm);
   const { Cr, cn } = prepBf16Centroids(C, K, 2);
   const a = Math.floor(n / 7), b = a + Math.floor(n / 3);
-  const rowCodes = await pool.assign(C, K, 0, n, false, new Int32Array(n));
-  const permCodes = await pool.assign(C, K, a, b, true, new Int32Array(b - a));
+  const rowCodes = await pool.assign({ Cr, cn }, K, 0, n, false, new Int32Array(n));
+  const permCodes = await pool.assign({ Cr, cn }, K, a, b, true, new Int32Array(b - a));
   pool.terminate();
   let bad = 0;
   for (let i = 0; i < n; i++) if (rowCodes[i] !== assignIndexBf16(Xr, i * 2, Cr, cn, K, 2)) bad++;
@@ -1428,8 +1710,13 @@ class LloydTrainer {
     // deferLoss: the caller scores the start itself (e.g. on the worker pool) instead of here
     this.loss = deferLoss ? NaN : fullAssignFlat(this.Xflat, this.n, this.Cflat, K, d, this.codes).loss;
     this.trainMs = 0;
+    // CPU time of assignment + update (the race clock), and this method's own recent timings (see JobStats)
+    this.cpuMs = 0; this.retimed = 0; this.jobStats = new JobStats(1); this.mainStats = new JobStats(3);
     this.pool = null;
     this.trainCodes = new Int32Array(this.n);
+    // timed: the pass goes to the pool in rounds of this many rows (e-means' batch, set at Train), so that both
+    // methods' worker jobs are the same length (see the timing note above JobStats); 0: the whole pass at once
+    this.round = 0;
   }
   get C() { return rowsFromFlat(this.Cflat, this.K, this.d); }
   get splits() { return this.cb.splits; }
@@ -1439,15 +1726,29 @@ class LloydTrainer {
     const { cb, n, K, d, Xflat, Xr } = this;
 
     const t0 = performance.now();
+    let workerMs = 0, m0 = t0, prepMs = 0;
     if (this.pool) {
-      await this.pool.assign(cb.C, K, 0, n, false, this.trainCodes);
+      // the centroids rounded to bf16, and their norms: once for the pass (timed with the main thread's share)
+      const prep = prepBf16Centroids(cb.C, K, d);
+      prepMs = performance.now() - t0;
+      const R = this.round > 0 ? this.round : n;
+      for (let a = 0; a < n; a += R) {
+        const b = Math.min(n, a + R);
+        await this.pool.assign(prep, K, a, b, false, this.trainCodes.subarray(a, b), this.jobStats);
+        workerMs += this.pool.lastMs; this.retimed += this.pool.lastRetimed;
+      }
+      m0 = performance.now();
       cb.collectFromCodes(Xflat, null, 0, n, this.trainCodes);
     } else {
       cb.collect(Xflat, Xr, null, 0, n, null);
     }
     cb.blend(0.0);
     cb.revive(1e-9);
-    this.trainMs += performance.now() - t0;
+    const t1 = performance.now();
+    this.trainMs += t1 - t0;
+    // CPU time: the workers' assignment plus the main thread's share (preparing the centroids, and from the codes to
+    // the new centroids)
+    this.cpuMs += workerMs + guardMs(this, this.mainStats, prepMs + t1 - m0, n);
     this.it++;
 
     this.loss = (await fullAssignMaybeParallel(this.assigner, Xflat, n, this.Cflat, K, d, this.codes)).loss;
@@ -1472,6 +1773,8 @@ class EmeansTrainer {
     this.captureSteps = Math.ceil(this.n / this.B);
     this.scheduleSteps = this.epochs * this.stepsPerEpoch;
     this.trainMs = 0;
+    this.cpuMs = 0; this.retimed = 0; this.jobStats = new JobStats(1); this.mainStats = new JobStats(3);
+    this.shufStats = new JobStats(1);   // as in LloydTrainer, plus the shuffle at each epoch
     this.pool = null;
     this.batchCodes = new Int32Array(this.B);
     this.totalSteps = (this.epochs - 1) * this.stepsPerEpoch + this.captureSteps;
@@ -1502,16 +1805,26 @@ class EmeansTrainer {
   async stepOnce() {
     if (this.done) return;
     const { cb, K, d, n } = this;
+    // CPU time of this step: the shuffle and the main thread's share (timed here) plus the workers' assignment
+    // (timed by them); sending the order and the centroids to the workers is not counted
+    let tm = performance.now(), main = 0, workerMs = 0;
     if (this.perm === null || this.inEpoch === this.stepsInEpoch()) {
       this.epoch++; this.inEpoch = 0;
       this.perm = shuffledIndices(cb.rng, n);
+      this.cpuMs += guardMs(this, this.shufStats, performance.now() - tm, n);
       if (this.pool) this.pool.setPerm(this.perm);
+      tm = performance.now();
       if (this.capturing) { this.capSum = new Float64Array(K * d); this.capCnt = new Float64Array(K); }
     }
     const off = this.inEpoch * this.B;
     const len = Math.min(this.B, n - off);
     if (this.pool) {
-      await this.pool.assign(cb.C, K, off, off + len, true, this.batchCodes);
+      // the centroids rounded to bf16, and their norms: once for this step, as one thread would, in the timed share
+      const prep = prepBf16Centroids(cb.C, K, d);
+      main += performance.now() - tm;
+      await this.pool.assign(prep, K, off, off + len, true, this.batchCodes, this.jobStats);
+      workerMs = this.pool.lastMs; this.retimed += this.pool.lastRetimed;
+      tm = performance.now();
       cb.collectFromCodes(this.Xflat, this.perm, off, len, this.batchCodes);
     } else {
       cb.collect(this.Xflat, this.Xr, this.perm, off, len, null);
@@ -1534,6 +1847,8 @@ class EmeansTrainer {
       }
       this.done = true;
     }
+    main += performance.now() - tm;
+    this.cpuMs += workerMs + guardMs(this, this.mainStats, main, len);
   }
   async scoreFull() {
     this.loss = (await fullAssignMaybeParallel(this.assigner, this.Xflat, this.n, this.Cflat, this.K, this.d, this.codes)).loss;
@@ -1742,13 +2057,15 @@ function drawChart(P, series, xMax, tCur) {
   // each curve up to the cursor; a measured (non-staircase) curve runs on along the straight line to its
   // next measured point, so it grows smoothly instead of jumping a whole segment at a time
   const vis = series.map(s => {
-    const h = s.hist, tLast = Math.min(tEnd, s.end === undefined ? Infinity : s.end + 1e-9);
+    // a series may carry its own cursor (s.cur): the race shows each method at its own epoch
+    const c = s.cur === undefined ? tCur : s.cur, cEnd = c === undefined ? Infinity : c + 1e-9;
+    const h = s.hist, tLast = Math.min(cEnd, s.end === undefined ? Infinity : s.end + 1e-9);
     let k = 0;
     while (k < h.length && h[k][0] <= tLast) k++;
     const pts = h.slice(0, k);
-    if (!s.step && k > 0 && k < h.length && tEnd < Infinity && tCur > h[k - 1][0]) {
-      const a = h[k - 1], b = h[k], f = (tCur - a[0]) / (b[0] - a[0]);
-      pts.push([tCur, a[1] + f * (b[1] - a[1])]);
+    if (!s.step && k > 0 && k < h.length && cEnd < Infinity && c > h[k - 1][0]) {
+      const a = h[k - 1], b = h[k], f = (c - a[0]) / (b[0] - a[0]);
+      pts.push([c, a[1] + f * (b[1] - a[1])]);
     }
     return pts;
   });
@@ -1798,12 +2115,19 @@ function drawChart(P, series, xMax, tCur) {
       ctx.lineTo(q[0], q[1]);
     }
     // a staircase holds its last value up to the cursor, but not past the method's last epoch
-    const tHold = Math.min(tCur, xMax, s.end === undefined ? Infinity : s.end);
-    if (s.step && k > 0 && tEnd < Infinity && hist[k - 1][0] < tHold) {
-      const q = xy(tHold, hist[k - 1][1]); ctx.lineTo(q[0], q[1]);
+    const c = s.cur === undefined ? tCur : s.cur;
+    let head = xy(hist[k - 1][0], hist[k - 1][1]);
+    if (s.step && k > 0 && c !== undefined) {
+      const tHold = Math.min(c, xMax, s.end === undefined ? Infinity : s.end);
+      if (hist[k - 1][0] < tHold) { const q = xy(tHold, hist[k - 1][1]); ctx.lineTo(q[0], q[1]); head = q; }
     }
     ctx.stroke();
     ctx.restore();
+    // where the method is now: a small dot at the head of its training-loss curve
+    if (s.head) {
+      ctx.beginPath(); ctx.arc(head[0], head[1], 3.3, 0, 2 * Math.PI);
+      ctx.fillStyle = s.color; ctx.fill(); ctx.lineWidth = 1.3; ctx.strokeStyle = "#ffffff"; ctx.stroke();
+    }
   }
   series.forEach((s, i) => drawLine(s, vis[i]));
   if (tEnd < Infinity) {
@@ -1838,10 +2162,12 @@ function setRunState(st) {
 }
 // The one button: Train when nothing is loaded, the settings changed or the run is over; Pause while it
 // plays; Resume when paused (dragging the slider back and pressing Resume replays from there).
-const SETTING_IDS = ["distSelect", "genN", "genSeed", "paramEpochs", "paramIters", "paramK"];
+const SETTING_IDS = ["distSelect", "genN", "genSeed", "paramEpochs", "paramIters", "paramK", "paramTiming"];
 // the typed numbers are compared as numbers, so "07" is the same seed as "7" (and an empty box is not seed 0)
 const settingsKey = () => SETTING_IDS.map(id => {
-  const v = document.getElementById(id).value;
+  const el = document.getElementById(id);
+  if (el.type === "checkbox") return String(el.checked);
+  const v = el.value;
   return id === "genSeed" || id === "paramIters" ? String(parseInt(v, 10)) : v;
 }).join("|");
 function mainMode() {
@@ -1849,7 +2175,7 @@ function mainMode() {
   if (runState === "starting") return "starting";
   if (!r || r.key !== settingsKey()) return "train";
   if (playing) return "pause";
-  if ((r.done && playhead >= r.T - 1e-9) || (r.failed && playhead >= r.frontier - 1e-9)) return "train";
+  if ((r.done && playhead >= r.endS - 1e-9) || (r.failed && playhead >= r.frontier - 1e-9)) return "train";
   return "resume";
 }
 function updateMainBtn() {
@@ -1861,6 +2187,7 @@ function updateMainBtn() {
   startBtn.setAttribute("aria-disabled", m === "starting" ? "true" : "false");
 }
 const statusBox = document.getElementById("statusBox");
+const runInfo = document.getElementById("runInfo");   // the run's settings, in the additional-info box
 const resultBox = document.getElementById("resultBox");
 const animRow = document.getElementById("animRow");
 const cvL = setupCanvas(animRow.querySelector("canvas.left"));
@@ -1873,11 +2200,59 @@ animRow.querySelectorAll(".pk-max").forEach(e => { e.textContent = String(VORONO
 const slider = document.querySelector(".controls .slider-col input[type=range]");
 const tval = document.querySelector(".controls .slider-label .val");
 const twait = document.querySelector(".controls .slider-label .wait");
+const teps = document.querySelector(".controls .slider-label .eps");
+// "Enable CPU timings" (Swann, 2026-11-06). The slider's units, the title clocks and the note's timing sentence follow
+// the run on screen, and before any run the box: seconds of CPU time when timed, epochs otherwise.
+const timingBox = document.getElementById("paramTiming");
+const tlab = document.querySelector(".controls .slider-label .lab");
+const tunit = document.querySelector(".controls .slider-label .unit");
+function showMode(timed) {
+  document.body.classList.toggle("cpu-timed", timed);
+  tlab.textContent = timed ? "CPU time: " : "epochs: ";
+  tunit.textContent = timed ? "\u00a0s" : "";   // a no-break space, as in "2.37 s" in the clocks
+  tval.textContent = timed ? fmtClock(0) : "0.00";
+  slider.step = timed ? "any" : "0.01";
+  slider.setAttribute("aria-label", timed ? "Playback position, in seconds of CPU time" : "Playback position in epochs");
+}
+timingBox.addEventListener("change", () => { if (!cur && runState !== "starting") showMode(timingBox.checked); });
+// without timings, both methods at epoch t (the same shape as raceAt)
+function epochAt(r, t) {
+  return { lf: lastAtOrBefore(r.lFrames.length, i => r.lFrames[i].t, t),
+    ef: lastAtOrBefore(r.eFrames.length, i => r.eFrames[i].t, t), lep: t, eep: t };
+}
+// each method's epoch at the playhead: how far through its passes it is, the same way for both (Lloyd only
+// moves its centroids at the end of a pass, but its pass is under way, and an epoch costs both about the same).
+// Truncated to 2 decimals, so it never reads an epoch before it is reached.
+const fmtEp = x => (Math.floor(x * 100 + 1e-7) / 100).toFixed(2);
+// The timing note says how many workers each method uses at a time (the same for both, see trainLayout): the run's
+// own count while a run is on screen, set when it starts, and before any run the count the settings would use.
+function setThreadsNote(width) {
+  document.querySelectorAll(".nthreads").forEach(e => {
+    e.textContent = width > 1 ? "added up over the " + width + " threads each method uses" : "on one thread for each method";
+  });
+}
+function threadsNoteForSettings() {
+  if (cur) return;
+  const v = id => parseInt(document.getElementById(id).value, 10);
+  const n = v("genN"), K = v("paramK"), E = Math.max(1, v("paramEpochs"));
+  if (!(n > 0 && K > 0 && E > 0)) return;
+  setThreadsNote(typeof Worker === "undefined" ? 1 : trainLayout(valleyBatch(K, E, n), K, raceThreads()).width);
+}
+document.addEventListener("input", threadsNoteForSettings);
 
 let lloyd = null, ema = null, stepsPerEpochEma = 1, testAssigner = null, trainPool = null;
 let lloydTrainHist = [], lloydTestHist = [], emaTrainHist = [], emaTestHist = [];
 
-function setResult(lTrain, eTrain, lTest, eTest, epochsEma, itersLloyd) {
+// The times in the result sentence. Within 5 ms or 5% of each other (the timer's grain on a tiny run, the run-to-run
+// spread on a big one) neither is coloured as the faster.
+function timeClause(secEma, secLloyd) {
+  const a = fmtSec(secEma), b = fmtSec(secLloyd);
+  if (a === b) return "the same CPU time (" + a + ")";
+  const close = Math.abs(secEma - secLloyd) < Math.max(0.005, 0.05 * Math.max(secEma, secLloyd));
+  return "<b" + (close ? "" : ' class="' + (secEma < secLloyd ? "better" : "worse") + '"') + ">" + a
+    + "</b> of CPU time instead of " + b;
+}
+function setResult(lTrain, eTrain, lTest, eTest, epochsEma, itersLloyd, secEma, secLloyd) {
   // one sentence comparing the final losses with Lloyd's; a number is blue when e-means is better, red when worse
   const part = (what, lw, ew) => {
     const win = ew < lw, pct = (100 * Math.abs(ew / lw - 1)).toFixed(1);
@@ -1885,8 +2260,12 @@ function setResult(lTrain, eTrain, lTest, eTest, epochsEma, itersLloyd) {
   };
   const winTest = eTest < lTest, winTrain = eTrain < lTrain;
   const epochs = m => m + (m === 1 ? " epoch" : " epochs");
+  const epCls = epochsEma < itersLloyd ? ' class="better"' : epochsEma > itersLloyd ? ' class="worse"' : "";
   let html = "e-means: " + part("test", lTest, eTest) + (winTest === winTrain ? " and " : " but ")
-    + part("train", lTrain, eTrain) + " than Lloyd, in " + epochs(epochsEma) + " instead of " + itersLloyd + ".";
+    + part("train", lTrain, eTrain) + " than Lloyd, in <b" + epCls + ">" + epochs(epochsEma) + "</b> instead of "
+    + itersLloyd
+    // and the two clocks: CPU time of training (see the note)
+    + (secEma >= 0 && secLloyd >= 0 && secEma + secLloyd > 0 ? ", and " + timeClause(secEma, secLloyd) : "") + ".";
   if (winTest !== winTrain) html += '<div class="tip">Try more epochs, or another seed, or slow EMA (see paper).</div>';
   else if (!winTest) html += '<div class="tip">Try more epochs or another seed.</div>';
   resultBox.innerHTML = "<div>" + html + "</div>";
@@ -1970,11 +2349,34 @@ const fmtMSE = v => v > 0 && v < 1e-3 ? v.toExponential(2) : v.toFixed(5);
 // run can never write a frame, a loss or a verdict.
 let runId = 0, cur = null, playing = false, playhead = 0, rafId = null, lastTs = null, runKey = "";
 
+// ---- The race (Swann, 2026-11-05). The playhead is a clock: seconds of CPU time. Each panel shows its method as it
+// was at that time on its own clock (each method's measured time at each recorded frame; see RaceClock). Until the
+// first method finishes, the clock runs at the pace that plays it in 2.4 to 6 s (0.6 s per epoch); it holds on that
+// finish line for RACE_HOLD_MS, a short beat while that method's clock settles to its total; the rest of the slower
+// method may then play faster, marked "fast-forward". A race shorter than RACE_FULL_S of CPU time plays shorter,
+// every phase and the hold shrinking with it down to 45% (about 2.3 s in all), so a tiny run is not drawn out.
+// This is the replay with "Enable CPU timings" checked. Unchecked, the playhead is in epochs, as before the timing
+// work (PLAY_EPOCHS_PER_SEC, see tick).
+// Both panels always follow the same clock, so they never move at different speeds at the same moment. The pace is
+// only how fast the clock is played; the times shown are the measurements.
+const RACE_HOLD_MS = 500, RACE_FULL_S = 1;
+function racePlan(r) {
+  if (!(r.lTot >= 0) || !(r.eTot >= 0)) return null;
+  // a total the timer read as zero (a run far below its 1 ms grain) still plays, as a sliver of time
+  const tl = Math.max(r.lTot, 1e-6), te = Math.max(r.eTot, 1e-6);
+  const eFirst = te <= tl, t1 = Math.min(tl, te), t2 = Math.max(tl, te);
+  const ep1 = eFirst ? r.E : r.L, ep2 = eFirst ? r.L : r.E, f = Math.min(1, Math.max(0.45, t2 / RACE_FULL_S));
+  // replay seconds up to the first finish, and for the rest of the other method
+  const d1 = f * Math.min(6, Math.max(2.4, 0.6 * ep1));
+  const d2 = f * Math.min(3.5, Math.max(1.5, 0.1 * ep2 * (1 - t1 / t2)));
+  const v1 = t1 / d1, v2 = Math.max(v1, (t2 - t1) / d2);
+  return { t1, t2, eFirst, v1, v2, f, hold: f * RACE_HOLD_MS, exact1: eFirst ? r.eDone : r.lDone };
+}
 function setPlaying(p) {
   playing = p;
   updateMainBtn();
   lastTs = null;
-  if (cur) { cur.shownVer = -1; if (!p) cur.speed = 0; }
+  if (cur) { cur.shownVer = -1; cur.holdUntil = 0; cur.rate2 = 0; cur.ffOn = false; if (!p) cur.speed = 0; }
   if (p) requestRender();
 }
 function requestRender() { if (!rafId) rafId = requestAnimationFrame(tick); }
@@ -1985,36 +2387,185 @@ function tick(ts) {
   if (playing) {
     const dt = lastTs === null ? 0 : Math.min(0.1, (ts - lastTs) / 1000);
     lastTs = ts;
-    let v = PLAY_EPOCHS_PER_SEC;
+    // the pause on the first finish line
+    if (r.holdUntil && ts < r.holdUntil) { render(r); requestRender(); return; }
+    if (r.holdUntil) { r.holdUntil = 0; r.shownVer = -1; }
+    // without timings, the epoch pace of the page before the timing work, one playhead for both methods
+    const P = r.timed ? racePlan(r) : null;
+    let v = !r.timed ? PLAY_EPOCHS_PER_SEC : !P ? 0 : playhead < P.t1 - 1e-9 ? P.v1 : P.v2;
     if (!r.done && !r.failed) {
       // like a video still loading: play at the pace training sustains and stay far enough behind it to
       // ride out the longest pause seen so far (a Lloyd epoch is one pass over all the points)
       const rate = r.frontier / Math.max((ts - r.t0) / 1000, 0.25);
-      const lead = Math.max(1.25 * r.maxGap * rate, 0.02 * r.T);
+      const lead = Math.max(1.25 * r.maxGap * rate, 0.02 * (!r.timed ? r.T : r.endEst > 0 ? r.endEst : 0), 1e-9);
       v = Math.min(v, rate * Math.min(1.5, (r.frontier - playhead) / lead));
     }
     r.speed += (v - r.speed) * Math.min(1, dt * 4);   // speed changes eased over ~0.25 s
-    playhead = Math.min(playhead + dt * Math.max(r.speed, 0) * playSpeed, r.frontier);
-    if (r.done && playhead >= r.T) { playhead = r.T; setPlaying(false); }
+    let next = Math.min(playhead + dt * Math.max(r.speed, 0) * playSpeed, r.frontier);
+    if (P && P.hold && P.exact1 && P.t2 > P.t1 + 1e-9 && playhead < P.t1 - 1e-9 && next >= P.t1 - 1e-9) {
+      next = P.t1; r.holdUntil = ts + P.hold; r.speed = 0;
+    }
+    // how fast the replay really goes, in clock seconds per second at Play speed 1 (training can hold it back):
+    // on average before the first finish, and smoothed over ~0.5 s after it. "fast-forward" shows only while the
+    // second is clearly the faster (on at 1.5 times, off below 1.2 times).
+    const wall = dt * playSpeed;
+    if (P && wall > 0) {
+      if (playhead < P.t1 - 1e-9) { r.p1Adv += next - playhead; r.p1Wall += wall; }
+      else {
+        r.rate2 += ((next - playhead) / wall - r.rate2) * Math.min(1, dt * 2);
+        const v1 = r.p1Wall > 0.3 ? r.p1Adv / r.p1Wall : P.v1;
+        r.ffOn = r.rate2 > (r.ffOn ? 1.2 : 1.5) * v1;
+      }
+    }
+    r.advancing = next > playhead;
+    playhead = next;
+    if (r.done && playhead >= r.endS - 1e-9) { playhead = r.endS; setPlaying(false); }
     else if (r.failed && playhead >= r.frontier) setPlaying(false);
   }
   render(r);
+  r.advancing = false;
   if (playing) requestRender();
+}
+
+// One method's clock for the replay. The measured CPU time is read at checkpoints at least RACE_CHECK_MS apart (and
+// at the end), and a frame recorded in between is placed by the steps done since the last checkpoint. The checkpoints
+// and the totals are measurements; the placement in between smooths the timer's 1 ms grain, which would otherwise
+// make the replay stutter, and can put a frame a step or two of CPU time (a few ms) away from its own reading. A
+// frame is shown only once it is placed.
+const RACE_CHECK_MS = 20;
+class RaceClock {
+  constructor() { this.ms0 = 0; this.w0 = 0; this.pending = []; this.s = 0; }
+  add(mark, work) { this.pending.push([mark, work]); }
+  close(ms, work, force) {
+    if (!force && ms - this.ms0 < RACE_CHECK_MS) return false;
+    const span = Math.max(work - this.w0, 1e-9);
+    for (const [m, w] of this.pending) m.s = (this.ms0 + (ms - this.ms0) * Math.min(1, (w - this.w0) / span)) / 1000;
+    this.pending = []; this.ms0 = ms; this.w0 = work; this.s = ms / 1000;
+    return true;
+  }
+}
+// each method's total CPU time: measured once it is done, extrapolated from its steps so far until then
+function raceEstimate(r) {
+  const L = r.lloyd, E = r.ema;
+  r.lTot = r.lDone ? L.cpuMs / 1000 : L.it > 0 ? L.cpuMs / 1000 * L.nIter / L.it : NaN;
+  r.eTot = r.eDone ? E.cpuMs / 1000 : E.step > 0 ? E.cpuMs / 1000 * E.totalSteps / E.step : NaN;
+  r.endEst = Math.max(r.lTot, r.eTot);
+  if (r.lDone && r.eDone) r.endS = r.timed ? r.endEst : r.T;   // without timings the replay ends at epoch T
+}
+// how far the clock may go: up to what both methods have trained (a finished method no longer limits it)
+function raceFrontier(r) {
+  if (r.lDone && r.eDone) return r.endS;
+  return Math.min(r.lDone ? Infinity : r.lS, r.eDone ? Infinity : r.eS);
+}
+// where each method is at clock s. Lloyd: its completed epochs on the clock (an epoch is one indivisible pass) and,
+// for the chart, how far into the next one it is (lep); the frame drawn (lf, the last recorded one, every epoch
+// unless frames are thinned). e-means: its frame (ef) and, for the chart, its epoch interpolated between frames (eep).
+function raceAt(r, s) {
+  const lm = r.lMarks, li = lastAtOrBefore(r.lReady, i => lm[i].s, s);
+  let lep = lm[li].t;
+  if (li + 1 < r.lReady && lm[li + 1].s > lm[li].s) lep += Math.min(1, (s - lm[li].s) / (lm[li + 1].s - lm[li].s));
+  const lf = lastAtOrBefore(r.lFrames.length, i => r.lFrames[i].t, lm[li].t);
+  const ef = r.eFrames, ei = lastAtOrBefore(r.eReady, i => ef[i].s, s);
+  let eep = ef[ei].t;
+  if (ei + 1 < r.eReady && ef[ei + 1].s > ef[ei].s) {
+    eep += Math.min(1, (s - ef[ei].s) / (ef[ei + 1].s - ef[ei].s)) * (ef[ei + 1].t - ef[ei].t);
+  }
+  return { lep, lf, ef: ei, eep, lDone: r.lDone && s >= r.lTot - 1e-9, eDone: r.eDone && s >= r.eTot - 1e-9 };
+}
+// Seconds: three significant digits from 0.1 s up, a millisecond below. A measured total is rounded (fmtNum); a
+// running clock is truncated to the digits it shows (fmtClock), so it never reads a total before it is reached,
+// except on a finish line, where every clock reads the rounded total like the slider.
+const secDigits = x => x < 0.1 ? 3 : x < 10 ? 2 : x < 100 ? 1 : 0;
+const fmtNum = x => x.toFixed(secDigits(x));
+const fmtSec = x => fmtNum(x) + "\u00a0s";   // a no-break space: "2.57 s" never splits over two lines
+const fmtClock = x => { const g = secDigits(x), p = Math.pow(10, g); return (Math.floor(x * p + 1e-7) / p).toFixed(g); };
+// the clock's sign: a stopwatch while the method runs, two arrows while it plays fast, a check once it is done
+const svg = (w, h, body) => '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + " " + h
+  + '" aria-hidden="true">' + body + "</svg>";
+const CLOCK_ICON = {
+  run: svg(11, 12, '<circle cx="5.5" cy="7" r="4.2" fill="none" stroke="currentColor" stroke-width="1.3"/>'
+    + '<path d="M4 1.1 H7 M5.5 1.1 V2.8 M5.5 7 L7.3 5.2" fill="none" stroke="currentColor" stroke-width="1.3"'
+    + ' stroke-linecap="round"/>'),
+  ff: svg(12, 8, '<path d="M0.5 0.6 L5.6 4 L0.5 7.4 Z M6.2 0.6 L11.3 4 L6.2 7.4 Z" fill="currentColor"/>'),
+  done: svg(10, 10, '<path d="M1.7 5.3 L4.1 7.6 L8.5 2.6" fill="none" stroke="currentColor" stroke-width="1.7"'
+    + ' stroke-linecap="round" stroke-linejoin="round"/>'),
+};
+const raceUI = {};
+for (const m of ["lloyd", "ema"]) {
+  raceUI[m] = { clock: animRow.querySelector(".panel-title." + m + " .clock") };
+}
+function setClock(ui, state, sec, onLine, settle) {
+  const el = ui.clock, txt = state === "done" || onLine ? fmtNum(sec) : fmtClock(sec);
+  const html = CLOCK_ICON[state] + (state === "ff" ? '<span class="ck-ff">fast-forward</span>' : "")
+    + '<span class="ck-t">' + txt + "\u00a0s</span>";
+  if (el._html === html) return;
+  const was = el._state;
+  el._html = html; el._state = state; el.innerHTML = html;
+  for (const s of ["run", "ff", "done"]) el.classList.toggle(s, s === state);
+  // the finish, reached while playing: the check fades in as the clock takes its method's colour (scrubbed onto,
+  // it is simply there)
+  el.classList.toggle("settle", state === "done" && was !== "done" && !!settle);
+  if (state !== "ff") el.classList.remove("ff-short");
+  else if (was !== "ff") {
+    // the word only where it fits beside the method's name, the arrows alone otherwise (a phone)
+    el.classList.remove("ff-short");
+    const t = el.parentNode;
+    if (t.scrollWidth > t.clientWidth + 0.5) el.classList.add("ff-short");
+  }
+}
+// The finish (Swann, 2026-11-06: the "Done" card was too loud). No card: each method's clock settles in place to a
+// check mark and its total, in the method's colour, and the replay holds a short beat on the first finish line
+// (RACE_HOLD_MS, see tick). The result sentence under the plots gives the loss gap at the end.
+function raceDecor(r, s, A, onLine) {
+  const P = racePlan(r), second = P && (P.eFirst ? "lloyd" : "ema");
+  // "fast-forward", in the clock of the method still running, while the replay really plays faster (see tick)
+  const ff = !!P && playing && !r.holdUntil && r.ffOn && s >= P.t1 - 1e-9 && !(P.eFirst ? A.lDone : A.eDone);
+  setClock(raceUI.lloyd, A.lDone ? "done" : ff && second === "lloyd" ? "ff" : "run", A.lDone ? r.lTot : s, onLine,
+    r.advancing);
+  setClock(raceUI.ema, A.eDone ? "done" : ff && second === "ema" ? "ff" : "run", A.eDone ? r.eTot : s, onLine,
+    r.advancing);
+}
+function resetRaceFx() {
+  for (const m of ["lloyd", "ema"]) {
+    const ui = raceUI[m];
+    ui.clock.className = "clock";
+    ui.clock.innerHTML = ""; ui.clock._html = ""; ui.clock._state = "";
+  }
 }
 
 function render(r) {
   if (r.shownT === playhead && r.shownVer === r.ver) return;
   const t = playhead;
-  slider.value = String(t);
-  slider.style.setProperty("--pf", String(t / r.T));
-  slider.style.setProperty("--bf", String(r.frontier / r.T));
-  slider.style.setProperty("--be", r.frontier >= r.T ? "1" : "0");
-  // truncated, not rounded, so the label never reads 1.00 while the panels still show epoch 0
-  tval.textContent = (Math.floor(t * 100 + 1e-9) / 100).toFixed(2);
+  let onLine = false;
+  if (r.timed) {
+    // the slider spans the whole race; until both have finished its end is the current estimate
+    const end = Math.max(r.done ? r.endS : r.endEst > 0 ? r.endEst : 1, 1e-6);
+    if (r.done ? r.sliderMax !== end : !(Math.abs(end - r.sliderMax) <= 0.002 * end)) {
+      r.sliderMax = end; slider.max = String(end);
+    }
+    slider.value = String(t);
+    slider.style.setProperty("--pf", String(Math.min(1, t / r.sliderMax)));
+    slider.style.setProperty("--bf", String(Math.min(1, r.frontier / r.sliderMax)));
+    slider.style.setProperty("--be", r.done ? "1" : "0");
+    // the label and the clocks are truncated while running, and read the rounded total on a finish line
+    onLine = [r.lTot, r.eTot].some(x => Math.abs(t - x) <= 1e-9 * Math.max(1, x));
+    tval.textContent = onLine ? fmtNum(t) : fmtClock(t);
+  } else {
+    // without timings: epochs, one playhead for both methods, as before the timing work
+    slider.value = String(t);
+    slider.style.setProperty("--pf", String(t / r.T));
+    slider.style.setProperty("--bf", String(r.frontier / r.T));
+    slider.style.setProperty("--be", r.frontier >= r.T ? "1" : "0");
+    // truncated, not rounded, so the label never reads 1.00 while the panels still show epoch 0
+    tval.textContent = (Math.floor(t * 100 + 1e-9) / 100).toFixed(2);
+  }
   twait.textContent = r.failed && t >= r.frontier - 1e-9 ? " (training stopped: error)"
     : playing && !r.done && t >= r.frontier ? " (training\u2026)" : "";
-  const li = lastAtOrBefore(r.lFrames.length, i => r.lFrames[i].t, t);
-  const ei = lastAtOrBefore(r.eFrames.length, i => r.eFrames[i].t, t);
+  const A = r.timed ? raceAt(r, t) : epochAt(r, t), li = A.lf, ei = A.ef;
+  if (r.timed) {
+    teps.innerHTML = '<span class="sep"> \u00b7 </span>epochs: <span class="e"><span class="nm">e-means </span>'
+      + fmtEp(A.eep) + '</span>, <span class="l"><span class="nm">Lloyd </span>' + fmtEp(A.lep) + '</span>';
+  }
   if (li !== r.drawnL) {
     r.drawnL = li;
     drawPanel({ ctx: cvL.ctx, w: cvL.w, h: cvL.h }, r.X2, r.lFrames[li].C, r.d, "#d62728", r.bounds);
@@ -2029,26 +2580,39 @@ function render(r) {
   const it = r.lFrames[li].t;
   // with thinned Lloyd frames, the Lloyd curves stop at the epoch its panel shows
   const lEnd = r.plan.stride > 1 ? it : r.L;
-  drawChart({ ctx: cvC.ctx, w: cvC.w, h: cvC.h }, [
-    { hist: r.eTr, color: "#1f77b4", dashed: false },
-    { hist: r.eTe, color: "#1f77b4", dashed: true },
-    { hist: r.lTr, color: "#d62728", dashed: false, step: true, end: lEnd },
-    { hist: r.lTe, color: "#d62728", dashed: true, step: true, end: lEnd },
-  ], r.T, t);
+  // the chart stays in epochs: timed, each curve runs up to where its own method is at this time (a dot at its head);
+  // without timings, every curve up to the one playhead, drawn as a line, as before the timing work
+  if (r.timed) {
+    drawChart({ ctx: cvC.ctx, w: cvC.w, h: cvC.h }, [
+      { hist: r.eTr, color: "#1f77b4", dashed: false, cur: A.eep, head: true },
+      { hist: r.eTe, color: "#1f77b4", dashed: true, cur: A.eep },
+      { hist: r.lTr, color: "#d62728", dashed: false, step: true, end: lEnd, cur: A.lep, head: true },
+      { hist: r.lTe, color: "#d62728", dashed: true, step: true, end: lEnd, cur: A.lep },
+    ], r.T);
+  } else {
+    drawChart({ ctx: cvC.ctx, w: cvC.w, h: cvC.h }, [
+      { hist: r.eTr, color: "#1f77b4", dashed: false },
+      { hist: r.eTe, color: "#1f77b4", dashed: true },
+      { hist: r.lTr, color: "#d62728", dashed: false, step: true, end: lEnd },
+      { hist: r.lTe, color: "#d62728", dashed: true, step: true, end: lEnd },
+    ], r.T, t);
+  }
   rL.innerHTML = "Train MSE <b>" + fmtMSE(r.lTr[it][1]) + "</b>, <span class=\"ro-test\">test MSE <b>"
     + fmtMSE(r.lTe[it][1]) + "</b></span> <span class=\"ro-when\">after " + it
     + (it === 1 ? " epoch" : " epochs") + "</span>";
   // e-means is scored on a cadence, so show the last measured point and the time it was measured at
-  const k = lastAtOrBefore(r.eTr.length, i => r.eTr[i][0], t), te = r.eTr[k][0];
+  const k = lastAtOrBefore(r.eTr.length, i => r.eTr[i][0], A.eep), te = r.eTr[k][0];
   rE.innerHTML = "Train MSE <b>" + fmtMSE(r.eTr[k][1]) + "</b>, <span class=\"ro-test\">test MSE <b>"
     + fmtMSE(r.eTe[k][1]) + "</b></span> <span class=\"ro-when\">after " + fmtT(te)
     + (te === 1 ? " epoch" : " epochs") + "</span>";
+  if (r.timed) raceDecor(r, t, A, onLine);
   // the verdict is about the final codebooks, so it shows only while the playhead is at the end
-  const atEnd = r.done && t >= r.T - 1e-9;
+  const atEnd = r.done && t >= r.endS - 1e-9;
   if (atEnd !== r.verdict) {
     r.verdict = atEnd;
     const last = h => h[h.length - 1][1];
-    if (atEnd) setResult(last(r.lTr), last(r.eTr), last(r.lTe), last(r.eTe), r.E, r.L);
+    if (atEnd) setResult(last(r.lTr), last(r.eTr), last(r.lTe), last(r.eTe), r.E, r.L,
+      r.timed ? r.eTot : NaN, r.timed ? r.lTot : NaN);   // the CPU times only when timed
     else resultBox.innerHTML = "";
   }
   r.shownT = t; r.shownVer = r.ver;
@@ -2075,13 +2639,18 @@ async function computeRun(r) {
   };
   const testLoss = async C => (await fullAssignMaybeParallel(r.testAssigner, r.testXflat, r.testN, C, K, d)).loss;
   while (!Lt.done || !Et.done) {
-    if (!Lt.done && (Et.done || r.lT <= r.eT)) {
+    // whichever method is behind on its own clock trains next, so both clocks are known up to about the same time
+    // (without timings: whichever is behind in epochs, as before the timing work)
+    if (!Lt.done && (Et.done || (r.timed ? Lt.cpuMs <= Et.cpuMs : r.lT <= r.eT))) {
       await Lt.stepOnce();
       if (!alive()) return;
       const te = await testLoss(Lt.Cflat);
       if (!alive()) return;
       r.lTr.push([Lt.it, Lt.loss]); r.lTe.push([Lt.it, te]);
       if (Lt.it % plan.stride === 0 || Lt.done) r.lFrames.push({ t: Lt.it, C: new Float32Array(Lt.Cflat) });
+      const mark = { t: Lt.it, s: NaN };
+      r.lMarks.push(mark); r.lClock.add(mark, Lt.it);
+      if (r.lClock.close(Lt.cpuMs, Lt.it, Lt.done)) { r.lReady = r.lMarks.length; r.lS = r.lClock.s; }
       r.lT = Lt.done ? r.T : Lt.it;
     } else {
       const tg = plan.targets[fi++];
@@ -2108,10 +2677,14 @@ async function computeRun(r) {
         r.scoreTotal += ms; r.nScored++; r.trainSince = 0;
         r.eTr.push([t, tr]); r.eTe.push([t, te]);
       }
-      r.eFrames.push({ t, C });
+      const fr = { t, s: NaN, C };
+      r.eFrames.push(fr); r.eClock.add(fr, Et.step);
+      if (r.eClock.close(Et.cpuMs, Et.step, Et.done)) { r.eReady = r.eFrames.length; r.eS = r.eClock.s; }
       r.eT = Et.done ? r.T : t;
     }
-    r.frontier = Math.min(r.lT, r.eT);
+    r.lDone = Lt.done; r.eDone = Et.done;
+    raceEstimate(r);
+    r.frontier = r.timed ? raceFrontier(r) : Math.min(r.lT, r.eT);
     if (r.frontier > r.lastFrontier) {
       const nowMs = performance.now();
       r.maxGap = Math.max(r.maxGap, (nowMs - r.lastAdv) / 1000);
@@ -2122,7 +2695,7 @@ async function computeRun(r) {
     requestRender();
     if (!(await breathe())) return;
   }
-  r.done = true; r.frontier = r.T; r.ver++;
+  r.done = true; raceEstimate(r); r.frontier = r.endS; r.ver++;
   // the replay needs only the recorded frames: free the workers and the copies of the data now, rather than
   // at the next Train (a phone may otherwise discard this tab when the visitor switches away)
   releaseWorkers();
@@ -2148,7 +2721,7 @@ function freeTrainingData(r) {
   r.testXflat = null;
 }
 
-function cancelRun() {
+function cancelRun(timed) {
   setPlaying(false);
   cur = null;
   releaseWorkers();
@@ -2161,8 +2734,10 @@ function cancelRun() {
   slider.style.setProperty("--pf", "0");
   slider.style.setProperty("--bf", "0");
   slider.style.setProperty("--be", "0");
-  tval.textContent = "0.00";
+  teps.textContent = "";
+  showMode(!!timed);   // the units of the run about to start
   twait.textContent = "";
+  resetRaceFx();
   animRow.classList.add("stale");
 }
 
@@ -2187,7 +2762,7 @@ function settingsError(msg) {
   showRunStatus(cur, cur.failMsg ? [msg, cur.failMsg] : [msg]);
 }
 
-async function startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, precision, nTrain) {
+async function startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, precision, nTrain, timed) {
   const d = X[0].length;
   const n = X.length;
   if (!nTrain) nTrain = Math.round(0.8 * n);
@@ -2214,16 +2789,32 @@ async function startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, prec
   ema.loss = lloyd.Cflat.every((v, i) => v === ema.Cflat[i]) ? lloyd.loss : (await ema.scoreFull());
   if (gen !== runId) return;
   stepsPerEpochEma = ema.stepsPerEpoch;
-  const nThreads = trainThreads();
-  // Lloyd's full-data assignment always goes to a worker, even a single one, so it never freezes the page
-  // (same codes as the main-thread path); e-means uses the pool when there are several threads, or when
-  // its steps are big enough to stall playback on the main thread.
-  if (nThreads >= 1 && typeof Worker !== "undefined") {
+  let raceWidth = 1;
+  if (typeof Worker !== "undefined" && timed) {
+    // Timed: both methods train in a pool of workers (same codes as the main-thread path), on the same number of
+    // workers at a time, for a fair race (trainLayout): only that many are started.
+    const lay = trainLayout(ema.B, K, raceThreads());
+    raceWidth = lay.width;
+    trainPool = new TrainPool(Float32Array.from(lloyd.Xr), d, raceWidth);
+    lloyd.pool = trainPool;
+    if (lay.emaOnPool) ema.pool = trainPool;
+    // the same jobs for both methods: Lloyd's pass in rounds of e-means' batch, after untimed warm-up rounds
+    lloyd.round = ema.B;
+    await trainPool.warmUp(lloyd.Cflat, K, ema.B, WARMUP_ROUNDS);
+    if (gen !== runId) return;
+  } else if (typeof Worker !== "undefined") {
+    // Not timed, as before the timing work: the whole pool. Lloyd's full-data assignment always goes to a worker,
+    // even a single one, so it never freezes the page (same codes as the main-thread path); e-means uses the pool
+    // when there are several threads, or when its steps are big enough to stall playback on the main thread.
+    const nThreads = trainThreads();
+    raceWidth = nThreads;
     trainPool = new TrainPool(Float32Array.from(lloyd.Xr), d, nThreads);
+    trainPool.timed = false;
     lloyd.pool = trainPool;
     const work = ema.B * K;
     if ((nThreads > 1 && work >= EMA_POOL_MIN_WORK) || work >= EMA_POOL_SOLO_WORK) ema.pool = trainPool;
   }
+  setThreadsNote(raceWidth);
 
   const testXflat = flattenRows(testX);
   const testN = testX.length;
@@ -2243,9 +2834,16 @@ async function startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, prec
   const plan = planFrames(itersLloyd, E, ema.stepsPerEpoch, ema.captureSteps, K, d);
   const r = {
     gen, K, d, E, L: itersLloyd, T, X2, bounds, plan, lloyd, ema, testAssigner, testXflat, testN,
+    timed,   // "Enable CPU timings" at Train: the CPU-time race, or the epoch replay
     lTr: lloydTrainHist, lTe: lloydTestHist, eTr: emaTrainHist, eTe: emaTestHist,
-    lFrames: [{ t: 0, C: new Float32Array(lloyd.Cflat) }], eFrames: [{ t: 0, C: new Float32Array(ema.Cflat) }],
+    lFrames: [{ t: 0, C: new Float32Array(lloyd.Cflat) }], eFrames: [{ t: 0, s: 0, C: new Float32Array(ema.Cflat) }],
     lT: 0, eT: 0, frontier: 0, done: false, verdict: false, bytes: 2 * plan.frameBytes, key: runKey,
+    // the race clock (seconds of CPU time): Lloyd's time at each completed epoch (lMarks) and e-means' at each
+    // frame, placed by RaceClock; lReady / eReady: how many are placed; lTot / eTot: totals, estimated until done
+    lMarks: [{ t: 0, s: 0 }], lClock: new RaceClock(), eClock: new RaceClock(), lReady: 1, eReady: 1, lS: 0, eS: 0,
+    lDone: false, eDone: false, lTot: NaN, eTot: NaN, endEst: NaN, endS: timed ? NaN : T, sliderMax: 1,
+    threads: raceWidth, holdUntil: 0, advancing: false,
+    p1Adv: 0, p1Wall: 0, rate2: 0, ffOn: false,   // the replay's real speed, for the fast-forward mark
     t0: performance.now(), lastAdv: performance.now(), lastFrontier: 0, maxGap: 0, speed: 0,
     ver: 0, shownT: -1, shownVer: -1, drawnL: -1, drawnE: -1,
     scoreMs: testMs * (1 + trainX.length / testN), nScored: 0, scoreTotal: 0, trainSince: 0,
@@ -2259,11 +2857,13 @@ async function startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, prec
   }
   cur = r;
   playhead = 0;
-  slider.max = String(T);
+  showMode(timed);
+  slider.max = timed ? "1" : String(T);
   slider.value = "0";
   slider.disabled = false;
   animRow.classList.remove("stale");
   animRow.style.display = "flex";
+  document.querySelector(".more-info").hidden = false;   // the additional info appears with the plots
   resultBox.style.display = "flex";
   resultBox.innerHTML = '';
   // on a phone the plots start below the screen: bring the button, the slider and the plots into view
@@ -2273,7 +2873,8 @@ async function startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, prec
   r.status = "𝑛=" + trainX.length + " training points (+" + testX.length + " held out)  𝑑=" + d + "  𝑘=" + K +
     "   e-means batch=" + ema.B + "  peak step=" + ema.alpha0.toFixed(4) +
     "   (" + ema.stepsPerEpoch + " steps/epoch, " + ema.totalSteps + " steps total)" + thin;
-  setStatus(r.status);
+  setStatus("");
+  runInfo.textContent = r.status;
   setRunState("running");
   setPlaying(true);
   computeRun(r).catch(err => {
@@ -2301,7 +2902,8 @@ function rowsGenerated(dist, N, k) {
 // Phones and tablets: n stops at the slider's last position, 10^5.47, so that the tab fits in a phone's memory
 // (an audit measured 340-506 MB at 300,000 points against 700-900 MB at 1,000,000), and a run may do at most 3 times
 // the default's work, n x k x (e-means + Lloyd epochs) = 1.5e9, so that it takes about a minute on a
-// mid-range phone (the default took 22 s on an emulated one). Larger settings are refused, never changed.
+// mid-range phone (the default took 22 s on an emulated one; with CPU timings enabled the race trains on fewer
+// threads and takes about 1.3 times that, see raceThreads). Larger settings are refused, never changed.
 const TOUCH_MAX_N = Math.round(Math.pow(10, 5.47));
 const TOUCH_DEFAULT_WORK = 100000 * 500 * (5 + 25), TOUCH_MAX_WORK = 3 * TOUCH_DEFAULT_WORK;
 async function startNewRun() {
@@ -2360,7 +2962,8 @@ async function startNewRun() {
   const gen = ++runId;
   settingsErrShown = false;
   runKey = settingsKey();
-  cancelRun();
+  const timed = timingBox.checked;   // read with the other settings: a change from here on waits for the next Train
+  cancelRun(timed);
   setRunState("starting");
   setStatus("Preparing…");
   await new Promise(r => setTimeout(r, 0));
@@ -2368,7 +2971,7 @@ async function startNewRun() {
   const X = GENERATORS[dist](n + heldOutCount(n), K, d, seed);
   await yieldToBrowser();
   if (gen !== runId) return;
-  await startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, precision, n);
+  await startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, precision, n, timed);
   if (gen === runId && runState === "starting") setRunState("idle");
 }
 
@@ -2422,9 +3025,12 @@ slider.addEventListener("keydown", e => {
   e.preventDefault();
   let t = dir > 0 ? r.frontier : 0;
   for (const fr of [r.lFrames, r.eFrames]) {
-    const i = lastAtOrBefore(fr.length, j => fr[j].t, dir > 0 ? playhead : playhead - 2e-9);
-    if (dir > 0 && i + 1 < fr.length) t = Math.min(t, fr[i + 1].t);
-    if (dir < 0 && fr[i].t < playhead - 1e-9) t = Math.max(t, fr[i].t);
+    // the time of each recorded frame on the replay's axis: seconds of CPU time when timed, epochs otherwise
+    const n = r.timed && fr === r.eFrames ? r.eReady : fr.length, at = j => !r.timed ? fr[j].t
+      : fr === r.eFrames ? fr[j].s : r.lMarks[Math.min(fr[j].t, r.lReady - 1)].s;
+    const i = lastAtOrBefore(n, at, dir > 0 ? playhead : playhead - 2e-9);
+    if (dir > 0 && i + 1 < n) t = Math.min(t, at(i + 1));
+    if (dir < 0 && at(i) < playhead - 1e-9) t = Math.max(t, at(i));
   }
   setPlaying(false);
   playhead = Math.min(Math.max(t, 0), r.frontier);
@@ -2437,7 +3043,7 @@ window.__playerState = () => {
   const last = h => h[h.length - 1][1];
   return JSON.stringify({
     runState, runId, computeDone: !!(r && r.done), frontier: r ? r.frontier : 0, playhead, playing,
-    T_total: r ? r.T : 0, lloydFrames: r ? r.lFrames.length : 0, emaFrames: r ? r.eFrames.length : 0,
+    T_total: r ? (r.done ? r.endS : r.timed ? r.sliderMax : r.T) : 0, lloydFrames: r ? r.lFrames.length : 0, emaFrames: r ? r.eFrames.length : 0,
     lloydFrameTimes: r ? r.lFrames.map(f => f.t) : [], emaFrameTimes: r ? r.eFrames.map(f => f.t) : [],
     snapshotBytes: r ? r.bytes : 0, snapshotBudget: SNAPSHOT_BUDGET, plannedBytes: r ? r.plan.planned * r.plan.frameBytes : 0,
     shownFrameTimes: r && r.drawnL >= 0 ? { lloyd: r.lFrames[r.drawnL].t, ema: r.eFrames[r.drawnE].t } : null,
@@ -2446,8 +3052,24 @@ window.__playerState = () => {
     histories: { lloydTrain: lloydTrainHist, lloydTest: lloydTestHist, emaTrain: emaTrainHist, emaTest: emaTestHist },
     finalMSE: r && r.done ? { lloydTrain: last(r.lTr), lloydTest: last(r.lTe), emaTrain: last(r.eTr), emaTest: last(r.eTe) } : null,
     readoutLloyd: rL.innerText, readoutEma: rE.innerText, verdictShown: !!(r && r.verdict) && resultBox.innerHTML !== "",
-    status: statusBox.innerText,
+    status: statusBox.innerText, runInfo: runInfo.innerText,
     scoring: r ? { scored: r.nScored, scoreMsEst: r.scoreMs, scoreMsTotal: r.scoreTotal, emaTrainMs: r.ema.trainMs } : null,
+    // UNITS CHANGED with the race (2026-11-05): playhead, frontier and T_total (and the slider) are seconds of CPU
+    // time, no longer epochs; clockUnits says so. T_epochs is the chart's span in epochs, and playheadEpochs where
+    // each method is at the playhead, in its own epochs.
+    // "Enable CPU timings" (2026-11-06): timed runs are on the CPU-time clock, the others in epochs as before
+    timed: r ? r.timed : timingBox.checked, clockUnits: r && !r.timed ? "epochs" : "seconds of CPU time",
+    T_epochs: r ? r.T : 0,
+    playheadEpochs: r ? (A => ({ lloyd: A.lep, ema: A.eep }))(r.timed ? raceAt(r, playhead) : epochAt(r, playhead)) : null,
+    timing: r ? { lloydCpuMs: r.lloyd.cpuMs, emaCpuMs: r.ema.cpuMs, lloydWallMs: r.lloyd.trainMs,
+      emaWallMs: r.ema.trainMs, threads: r.threads, raceThreads: raceThreads(), emaOnPool: !!r.ema.pool,
+      retimed: { lloyd: r.lloyd.retimed, ema: r.ema.retimed }, lloydTotalS: r.lTot, emaTotalS: r.eTot, endS: r.endS,
+      lloydMarkSecs: r.lMarks.slice(0, r.lReady).map(m => m.s), emaFrameSecs: r.eFrames.slice(0, r.eReady).map(f => f.s),
+      clocks: [raceUI.lloyd.clock.innerText, raceUI.ema.clock.innerText], holding: !!r.holdUntil,
+      clockStates: [raceUI.lloyd.clock.className, raceUI.ema.clock.className],
+      doneCards: document.querySelectorAll(".done-card").length,
+      fastForward: [raceUI.lloyd.clock._state === "ff", raceUI.ema.clock._state === "ff"],
+      replaySpeed: { phase1: r.p1Wall > 0 ? r.p1Adv / r.p1Wall : null, now: r.rate2 } } : null,
   });
 };
 
@@ -2466,6 +3088,8 @@ function wireLogSlider(rangeId, valId, hiddenId) {
 if (TOUCH_DEVICE) document.getElementById("genNlog").max = "5.47";
 wireLogSlider("genNlog", "genNval", "genN");
 wireLogSlider("paramKlog", "paramKval", "paramK");
+threadsNoteForSettings();
+showMode(timingBox.checked);   // a reload may have kept the box checked
 // The k slider has step="any" so that the mouse reaches every integer k, which makes the arrow keys jump a
 // whole decade: they move it by 0.01 instead (about 2.3% in k).
 document.getElementById("paramKlog").addEventListener("keydown", e => {
