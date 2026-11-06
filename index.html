@@ -904,6 +904,23 @@ centroids, labels = em.train(x)   # labels: each vector's cluster after the last
       var lf = D.lloyd.mse[TMAX], l1 = chartXY(0, lf), l2 = chartXY(TMAX, lf);
       ctx.save(); ctx.setLineDash([6, 5]); ctx.strokeStyle = RED; ctx.lineWidth = 1.6;
       ctx.beginPath(); ctx.moveTo(l1[0], l1[1]); ctx.lineTo(l2[0], l2[1]); ctx.stroke(); ctx.restore();
+      // the crossing, read off the x-axis: a dotted black line from the axis up to the red line, and its epoch to one
+      // decimal under the axis; found on the drawn blue curve (straight segments between its points)
+      var xc = null;
+      for (var kc = 1; kc < D.ema.mse.length && xc === null; kc++) {
+        var ma = D.ema.mse[kc - 1], mb = D.ema.mse[kc];
+        if (ma > lf && mb <= lf) {
+          var pa = D.ema.passes[kc - 1], pb = D.ema.passes[kc];
+          xc = pa + (ma - lf) / (ma - mb) * (pb - pa);
+        }
+      }
+      if (xc !== null) {
+        var cx1 = chartXY(xc, yMin), cx2 = chartXY(xc, lf);
+        ctx.save(); ctx.setLineDash([2, 3]); ctx.strokeStyle = "#1d1d1f"; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(cx1[0], Y0); ctx.lineTo(cx2[0], cx2[1]); ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.font = "bold 13px -apple-system,Arial,sans-serif"; ctx.fillStyle = "#1d1d1f";
+        ctx.textAlign = "center"; ctx.fillText(xc.toFixed(1), cx1[0], Y0 + 18); ctx.restore();
+      }
     }
     var c0 = chartXY(t, yMin);
     ctx.strokeStyle = "rgba(29,29,31,0.55)"; ctx.lineWidth = 1.5;
