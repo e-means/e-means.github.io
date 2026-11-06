@@ -99,6 +99,11 @@
   p.dek-links{font-size:0.95em; color:var(--ink-2); margin:14px 0 0;}
   p.dek-links a{text-decoration:none;}
   p.dek-links a:hover{text-decoration:underline;}
+  /* [Coauthors] (Swann, 2026-11-06): a button that looks like the links beside it and shows the names below */
+  p.dek-links .dek-toggle{font:inherit; color:var(--emablue); background:none; border:0; padding:0; cursor:pointer;}
+  p.dek-links .dek-toggle:hover{text-decoration:underline;}
+  p.dek-links .dek-toggle:focus-visible{outline:2px solid var(--emablue); outline-offset:2px; border-radius:2px;}
+  p.dek-coauthors{font-size:0.95em; color:var(--ink-2); margin:8px 0 0;}
   h2{font-size:1.5em; margin:2.6em 0 0.6em; letter-spacing:-0.005em;}
   p{margin:0 0 1.05em;}
   code, .eq{
@@ -351,6 +356,7 @@
       <nav class="em-nav">
         <a href="./" class="active">Blog post</a>
         <a href="playground.html">Playground</a>
+        <a href="video.html">Video</a>
         <details class="em-paper">
           <summary>Paper</summary>
           <div class="em-paper-pop">
@@ -386,7 +392,16 @@
     <h1 class="title">e-means: outperforming k-means in one-tenth the epochs</h1>
     <p class="dek">I&rsquo;m excited to open-source e-means: a modern, robust k-means algorithm developed at Meta FAIR. A replacement of Lloyd's algorithm, e-means delivers a ~10&times; speedup in both epochs and wall-clock time while achieving lower loss.</p>
     <p class="dek"><strong><a href="playground.html">Try e-means in your browser</a></strong></p>
-    <p class="dek-links"><a href="#">[Paper, arXiv coming soon]</a> &middot; <a href="https://github.com/facebookresearch/faiss/tree/main/contrib/e_means" target="_blank" rel="noopener">[Code]</a> &middot; <a href="#citing-this-work">[Cite]</a></p>
+    <p class="dek-links"><a href="#">[Paper, arXiv coming soon]</a> &middot; <a href="https://github.com/facebookresearch/faiss/tree/main/contrib/e_means" target="_blank" rel="noopener">[Code]</a> &middot; <a href="#citing-this-work">[Cite]</a> &middot; <button type="button" class="dek-toggle" aria-expanded="false" aria-controls="dekCoauthors">[Coauthors]</button></p>
+    <p class="dek-coauthors" id="dekCoauthors" hidden>Pierre-Emmanuel Mazar&eacute;, Gergely Szilvasy, Hugo Touvron, David Picard, Matthijs Douze and Herv&eacute; J&eacute;gou</p>
+    <script>
+    (function () {
+      var b = document.querySelector(".dek-toggle"), p = document.getElementById("dekCoauthors");
+      if (b && p) b.addEventListener("click", function () {
+        p.hidden = !p.hidden; b.setAttribute("aria-expanded", p.hidden ? "false" : "true");
+      });
+    })();
+    </script>
   </div>
 </header>
 

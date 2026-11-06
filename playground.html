@@ -128,6 +128,7 @@ button:disabled{opacity:0.4; cursor:default;}
 .footnote{font-size:0.78em; color:var(--ink-2); font-weight:normal; margin-top:18px;}
 /* the settings of the run and the notes, folded away: a quiet line with a chevron that turns when open */
 .more-info{margin-top:14px; font-size:0.88em; color:var(--ink-2);}
+.more-info + .more-info{margin-top:6px;}
 .more-info summary{display:inline-flex; align-items:center; gap:7px; cursor:pointer; list-style:none;
   padding:2px 0; user-select:none;}
 .more-info summary::-webkit-details-marker{display:none;}
@@ -488,6 +489,7 @@ body:not(.cpu-timed) .panel-title .clock{display:none;}
       <nav class="em-nav">
         <a href="./">Blog post</a>
         <a href="playground.html" class="active">Playground</a>
+        <a href="video.html">Video</a>
         <details class="em-paper">
           <summary>Paper</summary>
           <div class="em-paper-pop">
@@ -652,6 +654,12 @@ fits in a phone's memory and a run takes about a minute: <i class="math">n</i> s
 run may do at most 3 times the work of the default one (<i class="math">n</i> &times; <i class="math">k</i>
 &times; all epochs up to 4.5 billion), and training uses at most 4 threads. None of this changes the results.
 For bigger runs, use a computer.</p>
+</div>
+</details>
+<details class="more-info kudos" hidden>
+<summary><span class="chev" aria-hidden="true"></span>Kudos</summary>
+<div class="more-box">
+<p class="footnote">Thanks to <a href="https://github.com/theovincent" target="_blank" rel="noopener">Theo Vincent</a> for the idea of this 2D playground, and to <a href="https://hector.gr/" target="_blank" rel="noopener">Hector Garcia Rodriguez</a> and <a href="https://www.alphaxiv.org/@loic-cabannes" target="_blank" rel="noopener">Loic Cabannes</a> for their feedback.</p>
 </div>
 </details>
 
@@ -2863,7 +2871,8 @@ async function startTraining(gen, X, K, epochsEma, itersLloyd, reviveRatio, prec
   slider.disabled = false;
   animRow.classList.remove("stale");
   animRow.style.display = "flex";
-  document.querySelector(".more-info").hidden = false;   // the additional info appears with the plots
+  // the additional info and the kudos appear with the plots
+  document.querySelectorAll(".more-info").forEach(e => { e.hidden = false; });
   resultBox.style.display = "flex";
   resultBox.innerHTML = '';
   // on a phone the plots start below the screen: bring the button, the slider and the plots into view

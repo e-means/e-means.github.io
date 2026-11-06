@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>The e-means video</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<style>
+html{scrollbar-gutter:stable; -webkit-text-size-adjust:100%; text-size-adjust:100%;}
+.em-header{border-bottom:1px solid #e2e4e8; background:#fbfbfa; line-height:1.5;}
+.em-header-inner{max-width:1400px; margin:0 auto; padding:10px 32px; display:grid;
+    grid-template-columns:1fr auto 1fr; align-items:center; gap:12px 36px;}
+.em-left{justify-self:start; display:flex; align-items:baseline; flex-wrap:wrap; gap:8px 28px;}
+.em-name{font-family:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif; font-weight:600; font-size:17px;
+  color:#1b1f23; text-decoration:none;}
+.em-nav{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-size:13px; display:flex; gap:20px;}
+.em-nav a{color:#616b74; text-decoration:none; padding-bottom:2px; border-bottom:1px solid transparent;}
+.em-nav a:hover, .em-nav a.active{color:#1b1f23; border-bottom-color:#1d3557;}
+.em-paper{position:relative; display:inline-block;}
+.em-paper summary{list-style:none; cursor:pointer; color:#616b74; padding-bottom:2px;
+  border-bottom:1px solid transparent;}
+.em-paper summary::-webkit-details-marker{display:none;}
+.em-paper summary:hover, .em-paper[open] summary{color:#1b1f23; border-bottom-color:#1d3557;}
+.em-paper-pop{position:absolute; left:0; top:calc(100% + 10px); z-index:20; width:min(680px, 92vw);
+  background:#fff; border:1px solid #e2e4e8; border-radius:8px; padding:14px 16px;
+  box-shadow:0 6px 24px rgba(0,0,0,0.08); font-family:"IBM Plex Sans",-apple-system,sans-serif;}
+.em-paper-arxiv{font-size:13px; color:#616b74; margin-bottom:10px;}
+.em-cite{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-size:12px;
+  background:#f6f6f7; border:1px solid #e2e4e8; border-radius:6px; padding:10px 12px; margin:0 0 10px;
+  white-space:pre; overflow-x:auto; color:#1b1f23;}
+.em-copy{font-size:12px; padding:5px 12px;}
+.em-mark{justify-self:center; display:block; line-height:0; background:#fff;
+  border:none; transition:box-shadow 0.15s;}
+.em-mark:hover{box-shadow:0 2px 10px rgba(0,0,0,0.12);}
+.em-mark img{display:block; height:66px; width:auto;}
+.em-mark{position:relative; cursor:zoom-in;}
+.em-mark::after{content:"Click to zoom"; position:absolute; left:50%; top:calc(100% + 6px); transform:translateX(-50%); font:12px/1.4 "IBM Plex Sans",-apple-system,sans-serif; color:#fff; background:rgba(27,31,35,0.88); padding:3px 9px; border-radius:4px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.15s; z-index:30;}
+.em-mark:hover::after{opacity:1;}
+.em-mark:focus-visible::after{opacity:1;}
+.em-zoom{position:fixed; top:0; right:0; bottom:0; left:0; z-index:1000; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; margin:0; padding:24px; background:rgba(251,251,250,0.97); cursor:zoom-out;}
+.em-zoom.open{display:flex;}
+.em-zoom img{max-width:min(1600px, 94vw); max-height:78vh; width:auto; height:auto; background:#fff; border:none; box-shadow:0 6px 30px rgba(0,0,0,0.12);}
+.em-zoom figcaption{font-size:1.05em; color:#55555a;}
+@media (max-width:1180px){
+  .em-header-inner{grid-template-columns:1fr auto;}
+  .em-mark{grid-column:1 / -1; grid-row:1;}
+}
+.em-logos{justify-self:end; display:flex; align-items:center; gap:22px;}
+.em-logos > span{line-height:0; border:none; text-decoration:none;}
+.em-logos img{display:block; width:auto;}
+.em-logos .logo-fair{height:16px;}
+.em-logos .logo-enpc{height:50px;}
+.em-logos > span + span{padding-left:22px; border-left:1px solid #e2e4e8;}
+</style>
+<style>
+:root{
+  --ink:#111111; --ink-2:#55555a; --rule:#e5e5e8; --bg:#ffffff;
+  --emablue:#1f77b4; --emared:#d62728;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  line-height:1.5; font-size:16px;}
+.wide{max-width:1140px; margin:0 auto; padding:14px 24px 80px;}
+h1{font-size:1.7em; margin:8px 0 6px;}
+p.lede{color:var(--ink-2); max-width:760px;}
+h2{font-size:1.1em; margin:1.6em 0 0.5em;}
+fieldset{border:1px solid var(--rule); border-radius:8px; padding:4px 16px 6px; margin:0 0 10px;}
+fieldset .row{margin:2px 0;}
+fieldset label{margin-top:1px; margin-bottom:1px;}
+/* narrower parameter sliders so e-means epochs, Lloyd epochs and k fit on one line */
+#paramKlog{width:112px;}
+/* replay speed: not a run setting, so it looks different (grey, after a divider) */
+.speedslider{display:inline-flex; align-items:center; gap:8px; padding-left:12px; border-left:1px solid var(--rule);}
+/* the Parameters row is one line on desktop: slightly tighter gaps there */
+@media (min-width:601px){fieldset:nth-of-type(2) .row{column-gap:12px;}}
+#playSpeed{width:62px; accent-color:#8a8a90;}
+.speedval{min-width:2.4em; color:var(--ink-2); font-variant-numeric:tabular-nums;}
+@media (max-width:600px){.speedslider{display:grid; padding-left:0; border-left:0;} #playSpeed{width:100%;}}
+#paramKval{min-width:3.5em;}
+legend{font-weight:700; font-size:0.9em; padding:0 6px;}
+label{display:inline-block; font-size:0.88em; color:var(--ink-2); margin:4px 10px 4px 0;}
+input[type=number], select{font-size:0.95em; padding:3px 6px; width:90px;}
+select{width:auto;}
+textarea{width:100%; height:110px; font-family:"SF Mono","Menlo","Consolas",monospace; font-size:0.85em;}
+.row{display:flex; flex-wrap:wrap; gap:4px 18px; align-items:center; margin:6px 0;}
+.logslider{display:inline-flex; align-items:center; gap:8px;}
+.logslider input[type=range]{width:200px;}
+.logval{display:inline-block; min-width:5.5em; font-variant-numeric:tabular-nums; font-weight:600;}
+button{font-size:0.95em; padding:8px 18px; border-radius:6px; border:1px solid var(--emablue);
+  background:var(--emablue); color:#fff; cursor:pointer;}
+button:hover{opacity:0.9}
+button.secondary{background:#fff; color:var(--emablue);}
+button:disabled{opacity:0.4; cursor:default;}
+.anim-row{display:flex; flex-direction:column; margin-top:8px;
+  border:1px solid var(--rule); border-radius:10px; padding:10px 20px 14px; background:#fcfcfd;}
+/* below ~1100 px the chart moves to a second line instead of being cut off on the right */
+.anim-panels{display:flex; gap:24px; flex-wrap:wrap; justify-content:center; justify-content:safe center; overflow-x:auto;}
+.anim-row.stale .anim-panels{opacity:0.45;}
+.anim-row canvas{border-radius:4px; max-width:100%; height:auto;}
+.panel-title{font-weight:700; font-size:0.9em; min-height:1.3em; margin-bottom:6px; width:320px;
+  display:flex; align-items:flex-end; line-height:1.3;}
+.panel-title.lloyd{color:var(--emared)}
+.panel-title.ema{color:var(--emablue)}
+.readout{font-size:0.88em; color:var(--ink-2); margin-top:6px; min-height:3em; max-width:320px;}
+.chart-legend{display:flex; gap:16px; justify-content:center; margin-top:8px; font-size:0.85em; color:var(--ink-2);}
+.chart-legend .legend-item{display:inline-flex; align-items:center; gap:6px;}
+.chart-legend .dot{display:inline-block; width:10px; height:10px; border-radius:50%;}
+.chart-legend .line{display:inline-block; width:18px; height:0; border-top:2.2px solid; margin:0 1px;}
+.chart-legend .line.dashed{border-top-style:dashed;}
+.status{font-size:0.88em; color:var(--ink-2); margin-top:10px; white-space:pre-wrap; min-height:1.5em;}
+.status.err{color:var(--emared); font-weight:600;}
+.status .err{color:var(--emared); font-weight:600;}
+/* the result: one sentence under the plots, each number in the colour of the method it favours */
+.result-box{margin-top:14px; min-height:3.2em; font-size:1.02em; color:var(--ink); line-height:1.5;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
+.result-box:empty{visibility:hidden;}
+.result-box .better{color:var(--emablue);}
+.result-box .worse{color:var(--emared);}
+.result-box .tip{color:var(--ink-2); font-size:0.92em; margin-top:2px;}
+.result-box .waiting{color:var(--ink-2); font-style:italic;}
+.linslider{display:inline-flex; align-items:center; gap:8px;}
+.math{font-family:"Times New Roman",Times,serif; font-style:italic; font-size:1.12em;}
+.footnote{font-size:0.78em; color:var(--ink-2); font-weight:normal; margin-top:18px;}
+/* the settings of the run and the notes, folded away: a quiet line with a chevron that turns when open */
+.more-info{margin-top:14px; font-size:0.88em; color:var(--ink-2);}
+.more-info + .more-info{margin-top:6px;}
+.more-info summary{display:inline-flex; align-items:center; gap:7px; cursor:pointer; list-style:none;
+  padding:2px 0; user-select:none;}
+.more-info summary::-webkit-details-marker{display:none;}
+.more-info summary:hover, .more-info[open] summary{color:var(--ink);}
+.more-info summary:focus-visible{outline:2px solid var(--emablue); outline-offset:3px; border-radius:3px;}
+.more-info .chev{width:6px; height:6px; border-right:1.6px solid currentColor;
+  border-bottom:1.6px solid currentColor; transform:rotate(-45deg); transition:transform .15s ease;}
+.more-info[open] .chev{transform:rotate(45deg) translate(-1px, -1px);}
+.more-box{margin-top:8px; border:1px solid var(--rule); border-radius:8px; background:#fcfcfd;
+  padding:10px 14px 12px;}
+.more-box .run-info{white-space:pre-wrap; line-height:1.5;}
+.more-box .run-info:empty{display:none;}
+.more-box .footnote{font-size:1em; margin:8px 0 0; line-height:1.5;}
+.more-box .run-info:empty + .footnote{margin-top:0;}
+@media (prefers-reduced-motion: reduce){.more-info .chev{transition:none;}}
+.linslider input[type=range]{width:104px;}
+.controls{display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; margin:2px 0 0;}
+/* one button: Train / Pause / Resume; wide enough for its longest label ("Preparing…") so the slider does
+   not move when the label changes */
+#startBtn{min-width:8.6em; white-space:nowrap;}
+/* while preparing it ignores clicks but keeps the keyboard focus (the disabled attribute would drop it) */
+#startBtn[aria-disabled="true"]{opacity:0.4; cursor:default;}
+.play-btn{
+  flex:0 0 auto; width:36px; height:36px; border-radius:50%;
+  border:1px solid var(--rule); background:#fff; color:var(--emablue);
+  font-size:0.85em; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; padding:0 0 0 2px;
+}
+.play-btn:hover{background:#f3f7fb}
+/* the slider is 320 px wide when there is room and shrinks with the box on a phone */
+.slider-col{display:flex; flex-direction:column; align-items:center; gap:4px; flex:0 1 320px; min-width:0;}
+.slider-col input[type=range]{width:100%}
+.slider-label{font-size:0.85em; color:var(--ink-2)}
+.slider-label .eps .e, .slider-label .eps .l{white-space:nowrap;}
+.slider-label .eps .e{color:var(--emablue);} .slider-label .eps .l{color:var(--emared);}
+/* the CPU time and both epochs read as one line (Swann, 2026-11-06): a wider column for it, never broken */
+@media (min-width: 601px){.cpu-timed .slider-col{flex-basis:440px;} .slider-label{white-space:nowrap;}}
+/* phones: the epochs get their own line under the CPU time, without the separator */
+/* (on a phone the method names go too: the colours already say which number is which) */
+@media (max-width: 600px){.slider-label .eps{display:block;} .slider-label .eps .sep{display:none;}
+  .slider-label .eps .nm{display:none;}}
+/* playback slider, like a video player: played | computed | not computed yet */
+/* drawn on the input itself, so it repaints whenever --pf/--bf change; --be lets the computed part
+   reach the right edge once training is done (the thumb-centre mapping alone stops 7 px short) */
+.slider-col input[type=range]{-webkit-appearance:none; appearance:none; height:18px; margin:0;
+  cursor:pointer; --pf:0; --bf:0; --be:0;
+  background:linear-gradient(to right, var(--emablue) calc(7px + (100% - 14px) * var(--pf)),
+    #aac6e0 0 calc(7px + (100% - 14px) * var(--bf) + 7px * var(--be)), #e6e7ea 0) center / 100% 6px no-repeat;}
+.slider-col input[type=range]:disabled{cursor:default; opacity:0.5;}
+.slider-col input[type=range]:focus{outline:none;}
+.slider-col input[type=range]::-moz-range-track{height:6px; border:none; background:transparent;}
+.slider-col input[type=range]::-webkit-slider-runnable-track{height:6px; border:none; background:transparent;}
+.slider-col input[type=range]::-moz-range-progress{background:transparent;}
+.slider-col input[type=range]::-moz-range-thumb{box-sizing:border-box; width:14px; height:14px; border-radius:50%;
+  background:var(--emablue); border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,0.25);}
+.slider-col input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; box-sizing:border-box; width:14px;
+  height:14px; margin-top:-4px; border-radius:50%; background:var(--emablue); border:2px solid #fff;
+  box-shadow:0 0 0 1px rgba(0,0,0,0.25);}
+.slider-col input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px rgba(31,119,180,0.35);}
+.slider-col input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px rgba(31,119,180,0.35);}
+.linslider input[type=number]{width:4.5em;}
+code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
+  border:1px solid var(--rule); border-radius:4px; padding:0.1em 0.4em; font-size:0.92em;}
+</style>
+<style id="emCodeStyle">
+  .em-code-pop{width:auto; white-space:nowrap;}
+  .em-nav .em-code-pop a.em-code-link{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-size:13px; color:#1f77b4;}
+  /* phones: the pop-up spans the screen and its sentence wraps; the faiss path stays on one line */
+  @media (max-width: 600px){
+    .em-nav .em-code-pop{left:8px; right:8px; width:auto; white-space:normal;}
+    .em-nav .em-code-pop a.em-code-link{white-space:nowrap;}
+  }
+</style>
+<style id="pgHeroStyle">
+  .pg-hero{padding:10px 0 11px; text-align:center;}
+  .pg-hero-inner{max-width:1140px; margin:0 auto; padding:0 24px;}
+  .pg-hero h1{font-size:24px; line-height:1.15; margin:0 0 2px; letter-spacing:-0.01em;}
+  .pg-hero p.lede{font-size:16px; color:var(--ink-2); margin:0; max-width:none;}
+</style>
+<style id="pgPhoneStyle">
+/* ===== Phones, tablets and touch screens. Every rule that changes the page is inside a media query that a
+   desktop browser (fine pointer, wider than 600 px) does not match, so desktops render exactly as before. ===== */
+.lbl{display:contents;}          /* label text wrapper: invisible on desktop, a grid cell on phones */
+.touch-note{display:none;}       /* the note on phone limits, shown on touch screens only */
+
+/* --- Touch screens (a finger is the main pointer): targets of at least 44 px, and 16 px text in the form
+   fields so that iOS does not zoom the page in when one is tapped (pinch-zoom stays available). --- */
+@media (pointer: coarse){
+  select, input[type=number]{font-size:16px; min-height:44px;}
+  #startBtn{min-height:44px;}
+  .em-copy{min-height:44px;}
+  .em-nav a.em-code-link{display:inline-block; padding:12px 0;}
+  fieldset input[type=range]{height:44px;}
+  /* the header links keep their look; an invisible margin around each one takes the finger */
+  .em-name, .em-nav a, .em-paper summary{position:relative;}
+  .em-name::after, .em-nav a::after, .em-paper summary::after{content:""; position:absolute;
+    left:-6px; right:-6px; top:-11px; bottom:-11px;}
+  /* playback slider: 44 px tall to grab, the visible track stays 6 px, the thumb grows from 14 to 26 px
+     (the played / computed bar is re-drawn for the bigger thumb) */
+  .slider-col input[type=range]{height:44px;
+    background:linear-gradient(to right, var(--emablue) calc(13px + (100% - 26px) * var(--pf)),
+      #aac6e0 0 calc(13px + (100% - 26px) * var(--bf) + 13px * var(--be)), #e6e7ea 0) center / 100% 6px no-repeat;}
+  .slider-col input[type=range]::-moz-range-thumb{width:26px; height:26px;}
+  .slider-col input[type=range]::-webkit-slider-thumb{width:26px; height:26px; margin-top:-10px;}
+  .touch-note{display:block;}
+}
+
+/* --- Below 940 px the Paper menu (680 px wide, anchored at its link) runs off the right edge: open both menus
+   under the header, inside the screen, and let the citation wrap --- */
+@media (max-width: 940px){
+  .em-header-inner{position:relative;}
+  .em-paper{position:static;}
+  .em-paper-pop{left:16px; right:16px; width:auto; max-width:680px; top:calc(100% - 4px);}
+  .em-code-pop{left:auto;}
+  .em-cite{white-space:pre-wrap;}
+}
+
+/* --- Phones held upright (up to 600 px wide) --- */
+@media (max-width: 600px){
+  /* header: the wordmark on its own line, shrunk to the screen; then the name with the two logos (smaller,
+     still plain images); then the links */
+  .em-header-inner{grid-template-columns:1fr auto; padding:10px 16px 6px; gap:6px 12px;}
+  .em-mark{grid-column:1 / -1; grid-row:1; justify-self:center; width:min(100%, 340px);}
+  .em-mark img{width:100%; height:auto;}
+  .em-left{display:contents;}
+  .em-name{grid-column:1; grid-row:2; align-self:center;}
+  .em-logos{grid-column:2; grid-row:2; gap:14px;}
+  .em-logos > span + span{padding-left:14px;}
+  .em-logos .logo-fair{height:12px;}
+  .em-logos .logo-enpc{height:32px;}
+  .em-nav{grid-column:1 / -1; grid-row:3; gap:4px 18px; flex-wrap:wrap;}
+  .em-nav a, .em-paper summary{white-space:nowrap;}
+  .pg-hero{padding:8px 0 9px;}
+  .pg-hero-inner{padding:0 16px;}
+  .pg-hero h1{font-size:22px;}
+  .pg-hero p.lede{font-size:15px; line-height:1.4;}
+  .wide{padding:10px 16px 48px;}
+  /* settings: one per line, as label | slider | value, with the slider taking what is left */
+  fieldset{min-width:0; padding:2px 12px 6px; margin-bottom:8px;}
+  .row{display:block; margin:0;}
+  .row > label{display:grid; grid-template-columns:6.4em minmax(0, 1fr) 5.2em; align-items:center;
+    column-gap:8px; margin:0; padding:1px 0; line-height:1.25;}
+  .lbl{display:block;}
+  .row > label > select, #genSeed{grid-column:2 / -1;}
+  #genSeed, #paramIters{justify-self:start;}
+  select{width:100%; min-width:0;}
+  .row input[type=range], #paramKlog{width:100%; min-width:0; margin:0;}
+  .row .logval{min-width:0;}
+  .controls{flex-wrap:nowrap; scroll-margin-top:8px;}
+  /* plots: Lloyd and e-means side by side at half width, the loss chart under them; the canvases keep
+     their shape (only their displayed size changes, never what is computed or drawn) */
+  .anim-row{padding:8px 8px 10px;}
+  .anim-panels{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:6px 10px;}
+  .anim-panels > div:nth-child(3){grid-column:1 / -1; justify-self:center; width:100%; max-width:360px;
+    margin-top:6px;}
+  .anim-row canvas{width:100% !important;}
+  .panel-title{width:auto; margin-bottom:4px;}
+  .pt-more{display:none;}
+  .readout{max-width:none; font-size:0.8em; line-height:1.35; min-height:4.05em;}
+  .chart-legend{font-size:0.875em;}
+  .footnote{font-size:0.875em;}
+}
+
+/* --- Phones held sideways (short screen, touch, wider than 600 px; a narrower one keeps the upright layout):
+   one-line header and title, and the three plots in one
+   row, sized so that a plot fits on the screen together with the Train button and the slider --- */
+@media (orientation: landscape) and (min-width: 601px) and (max-height: 500px) and (pointer: coarse){
+  .em-header-inner{grid-template-columns:1fr auto 1fr; padding:6px 24px; gap:6px 24px;}
+  .em-mark{grid-column:auto; grid-row:auto; width:auto;}
+  .em-mark img{height:36px; width:auto;}
+  .em-left{gap:0 20px;}
+  .em-nav{gap:16px;}
+  .em-logos{gap:14px;}
+  .em-logos > span + span{padding-left:14px;}
+  .em-logos .logo-fair{height:12px;}
+  .em-logos .logo-enpc{height:34px;}
+  .pg-hero{padding:6px 0 7px;}
+  .pg-hero-inner{display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center; column-gap:16px;}
+  .wide{padding-top:10px;}
+  .row > label{flex:1 1 auto; white-space:nowrap; margin:0;}
+  .row input[type=range], #paramKlog{width:60px; flex:1 1 60px; min-width:50px;}
+  select{max-width:10em;}
+  #genSeed{width:4.5em;}
+  .controls{scroll-margin-top:6px;}
+  .anim-row{padding:8px 12px 10px;}
+  .anim-panels{--pw:min(320px, calc(100vh - 130px), calc((100vw - 140px) / 3)); gap:16px;}
+  .anim-panels > div{width:var(--pw);}
+  .anim-row canvas{width:100% !important;}
+  .panel-title{width:auto;}
+  .pt-more{display:none;}
+  .readout{max-width:none;}
+}
+@supports (height: 100svh){
+  @media (orientation: landscape) and (min-width: 601px) and (max-height: 500px) and (pointer: coarse){
+    /* the small viewport: the screen height left when the browser's toolbars are showing */
+    .anim-panels{--pw:min(320px, calc(100svh - 130px), calc((100vw - 140px) / 3));}
+  }
+}
+</style>
+<style id="videoStyle">
+  .video-wrap{max-width:1000px; padding-top:18px;}
+  .em-video{display:block; width:100%; height:auto; aspect-ratio:16 / 9; background:#fff;
+    border:1px solid var(--rule); border-radius:10px;}
+  .video-wrap .more-info{margin-top:18px;}
+  .video-wrap .footnote a{color:var(--emablue); text-decoration:none;}
+  .video-wrap .footnote a:hover{text-decoration:underline;}
+  @media (max-width: 600px){.video-wrap{padding:10px 12px 60px;} .em-video{border-radius:6px;}}
+</style>
+<meta name="description" content="e-means against classic k-means, in a short explainer">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://e-means.github.io/video.html">
+<meta property="og:title" content="The e-means video">
+<meta property="og:description" content="e-means against classic k-means, in a short explainer">
+<meta property="og:image" content="https://e-means.github.io/assets/emeans_video_v3_poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The e-means video">
+<meta name="twitter:description" content="e-means against classic k-means, in a short explainer">
+<meta name="twitter:image" content="https://e-means.github.io/assets/emeans_video_v3_poster.jpg">
+</head>
+<body>
+<header class="em-header">
+  <div class="em-header-inner">
+    <div class="em-left">
+      <a class="em-name" href="https://swannbessa.github.io/">Swann Bessa</a>
+      <nav class="em-nav">
+        <a href="./">Blog post</a>
+        <a href="playground.html">Playground</a>
+        <a href="video.html" class="active">Video</a>
+        <details class="em-paper">
+          <summary>Paper</summary>
+          <div class="em-paper-pop">
+            <div class="em-paper-arxiv">arXiv: link added on release (the paper is under review)</div>
+            <pre class="em-cite" id="emCite">@misc{emeans2026,
+  title  = {E-means: outperforming k-means (in one-tenth the epochs)},
+  author = {Bessa, Swann and Mazar&eacute;, Pierre-Emmanuel and Szilvasy, Gergely
+            and Touvron, Hugo and Picard, David and Douze, Matthijs
+            and J&eacute;gou, Herv&eacute;},
+  year   = {2026}
+}</pre>
+            <button type="button" class="secondary em-copy" id="emCopy">Copy citation</button>
+          </div>
+        </details>
+        <details class="em-paper em-code">
+          <summary>Code</summary>
+          <div class="em-paper-pop em-code-pop">
+            e-means is available in faiss : <a class="em-code-link" href="https://github.com/facebookresearch/faiss/tree/main/contrib/e_means" target="_blank" rel="noopener">faiss/contrib/e_means</a>
+          </div>
+        </details>
+      </nav>
+    </div>
+    <a class="em-mark" href="assets/emeans-wordmark.png?v=silk320" aria-label="Zoom into the e-means logo"><img src="assets/emeans-wordmark.png?v=silk320" alt="e-means"></a>
+    <div class="em-logos">
+      <span><img class="logo-fair" src="assets/meta-fair-logo.png" alt="Meta FAIR"></span>
+      <span><img class="logo-enpc" src="assets/enpc-logo.png" alt="École nationale des ponts et chaussées"></span>
+    </div>
+  </div>
+</header>
+<header class="pg-hero">
+  <div class="pg-hero-inner">
+    <h1>The e-means video</h1>
+    <p class="lede">e-means against classic k-means, in a short explainer</p>
+  </div>
+</header>
+<div class="wide video-wrap">
+<video class="em-video" controls playsinline preload="metadata" poster="assets/emeans_video_v3_poster.jpg" width="1920" height="1080">
+  <source src="assets/emeans_video_v3.mp4" type="video/mp4">
+  <source src="assets/emeans_video_v3.webm" type="video/webm">
+  Your browser cannot play this video here: <a href="assets/emeans_video_v3.mp4">download it</a>.
+</video>
+<details class="more-info">
+<summary><span class="chev" aria-hidden="true"></span>Kudos</summary>
+<div class="more-box">
+<p class="footnote">Thanks to <a href="https://shaamallow.com/" target="_blank" rel="noopener">Eyal Benaroche</a> for his detailed feedback, and to <a href="https://hector.gr/" target="_blank" rel="noopener">Hector Garcia Rodriguez</a>, <a href="https://www.alphaxiv.org/@loic-cabannes" target="_blank" rel="noopener">Loic Cabannes</a>, <a href="https://manuelfay.github.io/" target="_blank" rel="noopener">Manuel Faysse</a>, <a href="https://fleuret.org/francois/" target="_blank" rel="noopener">Francois Fleuret</a> and <a href="https://maxbeck.ai/" target="_blank" rel="noopener">Maximilian Beck</a> for their feedback.</p>
+</div>
+</details>
+</div>
+<script>
+const emPaper = document.querySelector(".em-paper");
+document.addEventListener("click", e => {
+  if (emPaper.open && !emPaper.contains(e.target)) emPaper.open = false;
+});
+document.getElementById("emCopy").addEventListener("click", () => {
+  const btn = document.getElementById("emCopy");
+  // no clipboard on http:// pages and in some in-app browsers: say so instead of doing nothing
+  if (!navigator.clipboard) { btn.textContent = "Select the text to copy"; return; }
+  navigator.clipboard.writeText(document.getElementById("emCite").textContent).then(
+    () => { btn.textContent = "Copied"; setTimeout(() => { btn.textContent = "Copy citation"; }, 1500); },
+    () => { btn.textContent = "Select the text to copy"; });
+});
+</script>
+<script id="emCodeScript">
+(function () {
+  var code = document.querySelector(".em-code"), paper = document.querySelector(".em-paper:not(.em-code)");
+  if (!code) return;
+  document.addEventListener("click", function (e) { if (code.open && !code.contains(e.target)) code.open = false; });
+  code.addEventListener("toggle", function () { if (code.open && paper) paper.open = false; });
+  if (paper) paper.addEventListener("toggle", function () { if (paper.open) code.open = false; });
+})();
+</script>
+<figure class="em-zoom" id="emZoom" role="dialog" aria-label="e-means logo, enlarged">
+  <img src="assets/emeans-wordmark.png?v=silk320" alt="e-means, clustered by e-means">
+  <figcaption>e-means, clustered by e-means: Visualization of the Voronoi cells</figcaption>
+</figure>
+<script>
+(function () {
+  var mark = document.querySelector(".em-mark"), zoom = document.getElementById("emZoom");
+  if (!mark || !zoom) return;
+  mark.addEventListener("click", function (e) { e.preventDefault(); zoom.classList.add("open"); });
+  zoom.addEventListener("click", function () { zoom.classList.remove("open"); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") zoom.classList.remove("open"); });
+})();
+</script>
+</body>
+</html>
