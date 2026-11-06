@@ -898,6 +898,13 @@ centroids, labels = em.train(x)   # labels: each vector's cluster after the last
       ctx.save(); ctx.setLineDash([6, 5]); ctx.strokeStyle = BLUE; ctx.lineWidth = 1.6;
       ctx.beginPath(); ctx.moveTo(e1[0], e1[1]); ctx.lineTo(e2[0], e2[1]); ctx.stroke(); ctx.restore();
     }
+    if (t >= TMAX - 1e-9) {
+      // once Lloyd is done, its final loss as a dashed line across the chart: where it meets the blue curve is
+      // where e-means reached the loss Lloyd needs all its epochs for (Swann, 2026-11-06)
+      var lf = D.lloyd.mse[TMAX], l1 = chartXY(0, lf), l2 = chartXY(TMAX, lf);
+      ctx.save(); ctx.setLineDash([6, 5]); ctx.strokeStyle = RED; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(l1[0], l1[1]); ctx.lineTo(l2[0], l2[1]); ctx.stroke(); ctx.restore();
+    }
     var c0 = chartXY(t, yMin);
     ctx.strokeStyle = "rgba(29,29,31,0.55)"; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(c0[0], Y0); ctx.lineTo(c0[0], Y1); ctx.stroke();
