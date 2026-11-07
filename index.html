@@ -338,7 +338,7 @@
 
 
 <style id="localMinStyle">
-  /* Local-minimum widgets ("Mini-batches better escape local minima"). Every rule is scoped to .lm. */
+  /* Local-minimum widgets ("e-means better escapes local minima"). Every rule is scoped to .lm. */
   figure.lm-fig{margin:1.8em 0;}
   .widget-wrap.lm{margin-top:0; margin-bottom:0;}
   .lm .lm-row{display:flex; gap:32px; justify-content:center;}
@@ -591,7 +591,8 @@
 <p>In order to achieve the lowest loss at a fixed number of epochs, we chose exponential moving average updates, hence the name e-means for our method.</p>
 </details>
 
-<h2 id="lloyd-special-case">Lloyd is a special case of e-means: hyperparameter study</h2>
+<details class="aside" id="lloyd-special-case">
+<summary>Lloyd is a special case of e-means: hyperparameter study</summary>
 <p>If you set the batch to the full dataset, <span class="e">B</span>&nbsp;=&nbsp;<span class="e">n</span>, <em>and</em> <span class="e">&alpha;</span>&nbsp;=&nbsp;1, then <span class="e">N<sub>j</sub></span> and <span class="e">S<sub>j</sub></span> become exactly the count and sum of the whole cluster, so one e-means iteration becomes exactly one Lloyd iteration. Lloyd is an extreme case of e-means without cosine scheduling on the learning rate. However, our hyperparameter search found that this extreme setting is highly suboptimal, which explains why e-means largely outperforms Lloyd. Below, the loss is measured for every batch size <span class="e">B</span> and step <span class="e">&alpha;</span>: Lloyd lands in a corner, well outside the region where the loss is lowest.</p>
 
 <figure id="loss-map">
@@ -600,102 +601,9 @@
 </figure>
 
 <p>This hyperparameter study motivated us to derive scaling laws that automatically pick the optimal batch size <span class="e">B</span> and step size <span class="e">&alpha;</span>.</p>
+</details>
 
-<h2 id="scaling-laws">Automatic hyperparameter tuning with scaling laws</h2>
-<p>An essential property of e-means is that practitioners don't need to set any additional hyperparameter compared to Lloyd's algorithm. We fitted two scaling laws to set the batch size <code>B</code> and step size <span class="e">&alpha;</span><sub>0</sub> from any problem's characteristics <code>(n, k, T)</code>, and found them to exhibit strong generalization on unseen datasets and problem scales.</p>
-<div class="eq-display">\[ B = c_B \, k^{b_k} \, n^{b_n} \, T^{b_T} \]</div>
-<div class="eq-display">\[ \alpha_0 = \min\!\Big(c_\alpha \, k^{a_k} \, B^{a_B} \, n^{a_n} \, T^{a_T},\; 1\Big) \]</div>
-
-<div class="coef-scroll"><table class="coef">
-  <thead>
-    <tr><th rowspan="2">law</th><th rowspan="2">constant</th><th colspan="4">exponent of</th><th rowspan="2">regret,<br>held-out datasets</th><th rowspan="2">regret,<br>held-out size</th><th rowspan="2">R&sup2;</th></tr>
-    <tr><th><span class="e">k</span></th><th><span class="e">B</span></th><th><span class="e">n</span></th><th><span class="e">T</span></th></tr>
-  </thead>
-  <tbody>
-    <tr><td>step <span class="e">&alpha;</span><sub>0</sub></td><td>0.824</td><td>&minus;0.46</td><td>0.90</td><td>&minus;0.45</td><td>&minus;0.11</td><td class="hl">0.07%</td><td class="hl">0.07%</td><td>0.95</td></tr>
-    <tr><td>batch <span class="e">B</span>, default</td><td>0.035</td><td>0.13</td><td>n/a</td><td>0.88</td><td>0.81</td><td class="hl">0.19%</td><td class="hl">0.20%</td><td>0.96</td></tr>
-    <tr><td>batch <span class="e">B</span>, quality law</td><td>0.0044</td><td>0.13</td><td>n/a</td><td>0.88</td><td>0.81</td><td class="hl">0.07%</td><td class="hl">0.06%</td><td>n/a</td></tr>
-  </tbody>
-</table></div>
-<p class="footnote" style="margin-top:-0.6em; border-top:none; padding-top:0;">Regret = (MSE with the law &minus; best MSE over the grid) / best MSE, median over configurations. Held-out datasets: SIFT, SPACEV, and the VIBE<sup class="cite"><a href="#ref9" id="cite9">[9]</a></sup> datasets arXiv and AG-News. Held-out size: one value of <span class="e">n</span> left out of the fit and predicted.</p>
-
-<p>We propose two equations to choose the batch, the default law and the quality law. The &ldquo;quality law&rdquo; trades off throughput for better clustering quality against the &ldquo;default&rdquo; law. Below we plot the training data for our scaling laws: validation MSE against step size <span class="e">&alpha;</span><sub>0</sub> (left) and batch size <span class="e">B</span> (right).</p>
-
-<figure>
-  <img src="assets/paper_laws.svg" width="1498" height="595" loading="lazy" decoding="async" alt="The two scaling laws fit on deep1b">
-</figure>
-
-<h2>The importance of dead-cluster revival</h2>
-
-
-<div class="widget-wrap" id="deadClusters">
-  <div class="dc-row">
-    <div class="dc-panel">
-      <div class="dc-title">Revival off</div>
-      <canvas data-arm="off" width="320" height="320" role="img" aria-label="Revival off: 25 centroids on 5,000 points. Two centroids jump into the empty space between the groups in the first update, get no points and stay dead."></canvas>
-      <div class="dc-readout" data-r="off">dead clusters: <b>0</b> of 25</div>
-    </div>
-    <div class="dc-panel">
-      <div class="dc-title ours">Revival on (e-means)</div>
-      <canvas data-arm="on" width="320" height="320" role="img" aria-label="Revival on: the same run with e-means' revival. At updates 5 and 10, each dead centroid is moved into a corner group that has only four centroids, splitting a big cluster there."></canvas>
-      <div class="dc-readout" data-r="on">dead clusters: <b>0</b> of 25</div>
-    </div>
-  </div>
-  <div class="chart-legend dc-legend">
-    <span class="legend-item"><i class="dot" style="background:var(--emablue)"></i><span class="label">centroid</span></span>
-    <span class="legend-item"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.6" fill="#fff" stroke="#d62728" stroke-width="1.8"/><path d="M4.7 4.7 L9.3 9.3 M4.7 9.3 L9.3 4.7" stroke="#d62728" stroke-width="1.5"/></svg><span class="label">dead cluster (no points)</span></span>
-    <span class="legend-item"><svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true"><path d="M1.5 12.5 L8 6.5 L14.5 9 M8 6.5 L9.5 1" fill="none" stroke="#9a9aa3" stroke-width="1.1"/></svg><span class="label">cluster boundaries</span></span>
-  </div>
-  <div class="controls">
-    <button class="play-btn" type="button" aria-label="Play or pause">&#9654;&#xFE0E;</button>
-    <div class="slider-col">
-      <input type="range" min="0" max="38" step="0.01" value="0" aria-label="Training progress">
-      <div class="slider-label">epochs: <span class="val">0.00</span> &middot; update <span class="upd">0</span> of <span class="tot">157</span></div>
-    </div>
-  </div>
-</div>
-<p class="footnote" style="margin-top:6px; border-top:none; padding-top:0;">Toy example showing the importance of dead-cluster revival.</p>
-
-<p>The main issue with mini-batch k-means is that it is prone to &ldquo;dead&rdquo; clusters, centroids that end up with zero assigned points during optimization. This reduces the effective size of the codebook, which is especially problematic for the large codebooks increasingly used today.</p>
-
-<p>A common mitigation is to reinitialize clusters that fall below a certain size threshold, as done in EnCodec<sup class="cite"><a href="#ref10" id="cite10">[10]</a></sup>, where dead centroids are simply replaced by random samples drawn from the incoming batch. While this helps, it does not fully resolve the issue. Instead of sampling arbitrary points from the batch, we revive dead clusters by splitting large, existing ones: we sample an active cluster with probability proportional to its size and split it into two. We found this approach, adapted from Faiss k-means, to be significantly more effective at eliminating dead clusters and preserving codebook capacity.</p>
-
-<div class="coef-scroll"><table class="coef revival">
-  <thead>
-    <tr><th>dataset</th><th>revival policy</th><th>dead clusters</th><th>of codebook</th><th>imbalance</th><th>test MSE</th></tr>
-  </thead>
-  <tbody>
-    <tr><td rowspan="3">DEEP</td><td class="pol"><strong>proportional split</strong></td><td class="hl"><strong>47</strong></td><td class="hl"><strong>0.3%</strong></td><td><strong>1.194</strong></td><td><strong>0.38762</strong></td></tr>
-    <tr><td class="pol">resample from batch (EnCodec)</td><td>2,343</td><td>14.3%</td><td>1.423</td><td>0.39124</td></tr>
-    <tr><td class="pol">off</td><td>4,313</td><td>26.3%</td><td>1.647</td><td>0.39448</td></tr>
-    <tr><td rowspan="3">SIFT</td><td class="pol"><strong>proportional split</strong></td><td class="hl"><strong>10</strong></td><td class="hl"><strong>0.1%</strong></td><td><strong>1.186</strong></td><td><strong>0.19623</strong></td></tr>
-    <tr><td class="pol">resample from batch (EnCodec)</td><td>750</td><td>4.6%</td><td>1.233</td><td>0.19684</td></tr>
-    <tr><td class="pol">off</td><td>2,080</td><td>12.7%</td><td>1.404</td><td>0.19797</td></tr>
-  </tbody>
-</table></div>
-<p class="footnote" style="margin-top:-0.6em; border-top:none; padding-top:0;">1 million vectors, <span class="e">k</span>&nbsp;=&nbsp;16,384, 5 epochs, mean over 5 seeds; only the revival policy varies. A cluster counts as dead when fewer than ten vectors are assigned to it at the end, a thousandth of an average cluster. Imbalance: how uneven the cluster sizes are (1 = all equal). From the paper&rsquo;s revival ablation table.</p>
-
-<h2 id="validation">Extensive experimental validation</h2>
-<p>We validated e-means on 24 different embedding and synthetic datasets and configurations (see <a href="#" title="link added on release">paper</a>).</p>
-
-<figure>
-  <img src="assets/paper_epochs_3arm.png" width="2568" height="1050" loading="lazy" decoding="async" alt="Convergence curves vs Lloyd at 25 iterations">
-  <figcaption>Train (top) and test (bottom) MSE, divided by Lloyd&rsquo;s after 25 epochs. Initialized from random vectors.</figcaption>
-</figure>
-
-<figure>
-  <img src="assets/paper_gpu_10m.svg" width="1644" height="624" loading="lazy" decoding="async" alt="Test error against wall-clock time on GPU, 10 million vectors, k=65,536">
-  <figcaption>Test MSE against wall-clock time on one H100, 10 million vectors, 65,536 clusters. 25 epochs of a plain PyTorch Lloyd (data on the GPU, bf16) take 142 to 155 seconds, against 14 to 22 seconds for Flash-KMeans<sup class="cite"><a href="#ref2">[2]</a></sup>. Labels on the curves mark the number of epochs.</figcaption>
-</figure>
-
-<figure>
-  <img src="assets/vibe_epochs_bar.svg" width="820" height="440" loading="lazy" decoding="async" alt="Epochs e-means needs to reach Lloyd's 25-epoch test error on the 11 VIBE embedding datasets: 1.6 to 2.4">
-  <figcaption>Epochs e-means needs to reach the test error Lloyd reaches in 25 epochs, on the 11 datasets of the VIBE embedding benchmark (text, code, image and multimodal embeddings, <span class="e">d</span>&nbsp;=&nbsp;200 to 3,072, <span class="e">k</span>&nbsp;=&nbsp;8,192 or 16,384). Budgets spaced 0.2 epochs apart, median over five seeds. Every dataset needs between 1.6 and 2.4 epochs, against Lloyd&rsquo;s 25.</figcaption>
-</figure>
-
-
-
-<h2 id="local-minima">Mini-batches better escape local minima</h2>
+<h2 id="local-minima">e-means better escapes local minima</h2>
 <p>To better understand why e-means reaches better losses than Lloyd at convergence, we plotted a few trainings on toy datasets to evaluate their ability to escape local minima. Repeating trainings over 200 seeds, we found that e-means is much less likely to fall in pathological configurations compared to Lloyd.</p>
 
 <figure class="lm-fig">
@@ -811,6 +719,100 @@
 </figure>
 
 <p>Our explanation for that is that mini-batches provide more noisy updates that are more likely to explore the optimization landscape and escape local minima. Lloyd, with its always decreasing loss, is more likely to exploit found local minima and never escape them.</p>
+
+<h2 id="scaling-laws">Automatic hyperparameter tuning with scaling laws</h2>
+<p>An essential property of e-means is that practitioners don't need to set any additional hyperparameter compared to Lloyd's algorithm. We fitted two scaling laws to set the batch size <code>B</code> and step size <span class="e">&alpha;</span><sub>0</sub> from any problem's characteristics <code>(n, k, T)</code>, and found them to exhibit strong generalization on unseen datasets and problem scales.</p>
+<div class="eq-display">\[ B = c_B \, k^{b_k} \, n^{b_n} \, T^{b_T} \]</div>
+<div class="eq-display">\[ \alpha_0 = \min\!\Big(c_\alpha \, k^{a_k} \, B^{a_B} \, n^{a_n} \, T^{a_T},\; 1\Big) \]</div>
+
+<div class="coef-scroll"><table class="coef">
+  <thead>
+    <tr><th rowspan="2">law</th><th rowspan="2">constant</th><th colspan="4">exponent of</th><th rowspan="2">regret,<br>held-out datasets</th><th rowspan="2">regret,<br>held-out size</th><th rowspan="2">R&sup2;</th></tr>
+    <tr><th><span class="e">k</span></th><th><span class="e">B</span></th><th><span class="e">n</span></th><th><span class="e">T</span></th></tr>
+  </thead>
+  <tbody>
+    <tr><td>step <span class="e">&alpha;</span><sub>0</sub></td><td>0.824</td><td>&minus;0.46</td><td>0.90</td><td>&minus;0.45</td><td>&minus;0.11</td><td class="hl">0.07%</td><td class="hl">0.07%</td><td>0.95</td></tr>
+    <tr><td>batch <span class="e">B</span>, default</td><td>0.035</td><td>0.13</td><td>n/a</td><td>0.88</td><td>0.81</td><td class="hl">0.19%</td><td class="hl">0.20%</td><td>0.96</td></tr>
+    <tr><td>batch <span class="e">B</span>, quality law</td><td>0.0044</td><td>0.13</td><td>n/a</td><td>0.88</td><td>0.81</td><td class="hl">0.07%</td><td class="hl">0.06%</td><td>n/a</td></tr>
+  </tbody>
+</table></div>
+<p class="footnote" style="margin-top:-0.6em; border-top:none; padding-top:0;">Regret = (MSE with the law &minus; best MSE over the grid) / best MSE, median over configurations. Held-out datasets: SIFT, SPACEV, and the VIBE<sup class="cite"><a href="#ref9" id="cite9">[9]</a></sup> datasets arXiv and AG-News. Held-out size: one value of <span class="e">n</span> left out of the fit and predicted.</p>
+
+<p>We propose two equations to choose the batch, the default law and the quality law. The &ldquo;quality law&rdquo; trades off throughput for better clustering quality against the &ldquo;default&rdquo; law. Below we plot the training data for our scaling laws: validation MSE against step size <span class="e">&alpha;</span><sub>0</sub> (left) and batch size <span class="e">B</span> (right).</p>
+
+<figure>
+  <img src="assets/paper_laws.svg" width="1498" height="595" loading="lazy" decoding="async" alt="The two scaling laws fit on deep1b">
+</figure>
+
+<h2>The importance of dead-cluster revival</h2>
+
+
+<div class="widget-wrap" id="deadClusters">
+  <div class="dc-row">
+    <div class="dc-panel">
+      <div class="dc-title">Revival off</div>
+      <canvas data-arm="off" width="320" height="320" role="img" aria-label="Revival off: 25 centroids on 5,000 points. Two centroids jump into the empty space between the groups in the first update, get no points and stay dead."></canvas>
+      <div class="dc-readout" data-r="off">dead clusters: <b>0</b> of 25</div>
+    </div>
+    <div class="dc-panel">
+      <div class="dc-title ours">Revival on (e-means)</div>
+      <canvas data-arm="on" width="320" height="320" role="img" aria-label="Revival on: the same run with e-means' revival. At updates 5 and 10, each dead centroid is moved into a corner group that has only four centroids, splitting a big cluster there."></canvas>
+      <div class="dc-readout" data-r="on">dead clusters: <b>0</b> of 25</div>
+    </div>
+  </div>
+  <div class="chart-legend dc-legend">
+    <span class="legend-item"><i class="dot" style="background:var(--emablue)"></i><span class="label">centroid</span></span>
+    <span class="legend-item"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.6" fill="#fff" stroke="#d62728" stroke-width="1.8"/><path d="M4.7 4.7 L9.3 9.3 M4.7 9.3 L9.3 4.7" stroke="#d62728" stroke-width="1.5"/></svg><span class="label">dead cluster (no points)</span></span>
+    <span class="legend-item"><svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true"><path d="M1.5 12.5 L8 6.5 L14.5 9 M8 6.5 L9.5 1" fill="none" stroke="#9a9aa3" stroke-width="1.1"/></svg><span class="label">cluster boundaries</span></span>
+  </div>
+  <div class="controls">
+    <button class="play-btn" type="button" aria-label="Play or pause">&#9654;&#xFE0E;</button>
+    <div class="slider-col">
+      <input type="range" min="0" max="38" step="0.01" value="0" aria-label="Training progress">
+      <div class="slider-label">epochs: <span class="val">0.00</span> &middot; update <span class="upd">0</span> of <span class="tot">157</span></div>
+    </div>
+  </div>
+</div>
+<p class="footnote" style="margin-top:6px; border-top:none; padding-top:0;">Toy example showing the importance of dead-cluster revival.</p>
+
+<p>The main issue with mini-batch k-means is that it is prone to &ldquo;dead&rdquo; clusters, centroids that end up with zero assigned points during optimization. This reduces the effective size of the codebook, which is especially problematic for the large codebooks increasingly used today.</p>
+
+<p>A common mitigation is to reinitialize clusters that fall below a certain size threshold, as done in EnCodec<sup class="cite"><a href="#ref10" id="cite10">[10]</a></sup>, where dead centroids are simply replaced by random samples drawn from the incoming batch. While this helps, it does not fully resolve the issue. Instead of sampling arbitrary points from the batch, we revive dead clusters by splitting large, existing ones: we sample an active cluster with probability proportional to its size and split it into two. We found this approach, adapted from Faiss k-means, to be significantly more effective at eliminating dead clusters and preserving codebook capacity.</p>
+
+<div class="coef-scroll"><table class="coef revival">
+  <thead>
+    <tr><th>dataset</th><th>revival policy</th><th>dead clusters</th><th>of codebook</th><th>imbalance</th><th>test MSE</th></tr>
+  </thead>
+  <tbody>
+    <tr><td rowspan="3">DEEP</td><td class="pol"><strong>proportional split</strong></td><td class="hl"><strong>47</strong></td><td class="hl"><strong>0.3%</strong></td><td><strong>1.194</strong></td><td><strong>0.38762</strong></td></tr>
+    <tr><td class="pol">resample from batch (EnCodec)</td><td>2,343</td><td>14.3%</td><td>1.423</td><td>0.39124</td></tr>
+    <tr><td class="pol">off</td><td>4,313</td><td>26.3%</td><td>1.647</td><td>0.39448</td></tr>
+    <tr><td rowspan="3">SIFT</td><td class="pol"><strong>proportional split</strong></td><td class="hl"><strong>10</strong></td><td class="hl"><strong>0.1%</strong></td><td><strong>1.186</strong></td><td><strong>0.19623</strong></td></tr>
+    <tr><td class="pol">resample from batch (EnCodec)</td><td>750</td><td>4.6%</td><td>1.233</td><td>0.19684</td></tr>
+    <tr><td class="pol">off</td><td>2,080</td><td>12.7%</td><td>1.404</td><td>0.19797</td></tr>
+  </tbody>
+</table></div>
+<p class="footnote" style="margin-top:-0.6em; border-top:none; padding-top:0;">1 million vectors, <span class="e">k</span>&nbsp;=&nbsp;16,384, 5 epochs, mean over 5 seeds; only the revival policy varies. A cluster counts as dead when fewer than ten vectors are assigned to it at the end, a thousandth of an average cluster. Imbalance: how uneven the cluster sizes are (1 = all equal). From the paper&rsquo;s revival ablation table.</p>
+
+<h2 id="validation">Extensive experimental validation</h2>
+<p>We validated e-means on 24 different embedding and synthetic datasets and configurations (see <a href="#" title="link added on release">paper</a>).</p>
+
+<figure>
+  <img src="assets/paper_epochs_3arm.png" width="2568" height="1050" loading="lazy" decoding="async" alt="Convergence curves vs Lloyd at 25 iterations">
+  <figcaption>Train (top) and test (bottom) MSE, divided by Lloyd&rsquo;s after 25 epochs. Initialized from random vectors.</figcaption>
+</figure>
+
+<figure>
+  <img src="assets/paper_gpu_10m.svg" width="1644" height="624" loading="lazy" decoding="async" alt="Test error against wall-clock time on GPU, 10 million vectors, k=65,536">
+  <figcaption>Test MSE against wall-clock time on one H100, 10 million vectors, 65,536 clusters. 25 epochs of a plain PyTorch Lloyd (data on the GPU, bf16) take 142 to 155 seconds, against 14 to 22 seconds for Flash-KMeans<sup class="cite"><a href="#ref2">[2]</a></sup>. Labels on the curves mark the number of epochs.</figcaption>
+</figure>
+
+<figure>
+  <img src="assets/vibe_epochs_bar.svg" width="820" height="440" loading="lazy" decoding="async" alt="Epochs e-means needs to reach Lloyd's 25-epoch test error on the 11 VIBE embedding datasets: 1.6 to 2.4">
+  <figcaption>Epochs e-means needs to reach the test error Lloyd reaches in 25 epochs, on the 11 datasets of the VIBE embedding benchmark (text, code, image and multimodal embeddings, <span class="e">d</span>&nbsp;=&nbsp;200 to 3,072, <span class="e">k</span>&nbsp;=&nbsp;8,192 or 16,384). Budgets spaced 0.2 epochs apart, median over five seeds. Every dataset needs between 1.6 and 2.4 epochs, against Lloyd&rsquo;s 25.</figcaption>
+</figure>
+
+
 
 <h2>Library and code</h2>
 <div class="eq-block">from faiss.contrib.e_means import Emeans
