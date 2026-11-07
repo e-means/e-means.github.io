@@ -1957,7 +1957,7 @@ document.getElementById("emCopy").addEventListener("click", () => {
     // marks (6 px below it) and the thumb (R below it) by 11 px. R is larger on touch screens, and so is the gap.
     function geom(W) {
       var small = W < 420, PT = 20, PB = PT + (small ? 42 : 48), TY = PB + 34, LB = Math.max(6, R) + 20;
-      return { W: W, small: small, PT: PT, PB: PB, TY: TY, LB: LB, H: TY + LB + 6 };
+      return { W: W, small: small, PT: PT, PB: PB, TY: TY, LB: LB, H: TY + LB + 6, AY: PT - 13 };  // AY: arrow tip
     }
     var lo = Infinity, hi = -Infinity, i;
     for (i = 0; i < NE; i++) {
@@ -2012,9 +2012,9 @@ document.getElementById("emCopy").addEventListener("click", () => {
       var px = Math.round(css * dpr), py = Math.round(g.H * dpr);
       if (strip.width !== px || strip.height !== py) { strip.width = px; strip.height = py; }
       ST.css = css; ST.dpr = dpr; ST.g = g;
-      // the y-axis name: its right edge 6 px left of the axis, centred on the chart's height
-      ylab.style.right = Math.round(css - X(0) + 6) + "px";
-      ylab.style.top = Math.round((g.PT + g.PB) / 2 - ylab.offsetHeight / 2) + "px";
+      // the y-axis name: its right edge 9 px left of the axis, its first line level with the axis' arrow tip
+      ylab.style.right = Math.round(css - X(0) + 9) + "px";
+      ylab.style.top = Math.round(g.AY - 7) + "px";
       // the curves' points at this width: Lloyd as steps, e-means one point per update inside the zoomed stretch.
       // Outside it many updates share a few pixels, and drawing each one turns the line into a dense fuzzy band, so
       // there the updates are grouped into columns as wide as the gap between two updates inside the stretch, one
@@ -2103,19 +2103,21 @@ document.getElementById("emCopy").addEventListener("click", () => {
           ctx.lineTo(x, g.TY - 6); ctx.stroke(); ctx.restore();
         }
         ctx.font = "600 " + fsm + "px " + FONT; ctx.textBaseline = "alphabetic";
-        var tw = ctx.measureText(label).width, right = x + 5 + tw > W - 2;
+        var off = v > 0 ? 5 : 9;  // at the axis, clear of its arrowhead
+        var tw = ctx.measureText(label).width, right = x + off + tw > W - 2;
         ctx.textAlign = right ? "right" : "left";
         ctx.strokeStyle = "rgba(252,252,253,0.94)"; ctx.lineWidth = 3; ctx.lineJoin = "round";
-        ctx.strokeText(label, right ? x - 5 : x + 5, yText);
-        ctx.fillStyle = col; ctx.fillText(label, right ? x - 5 : x + 5, yText);
-        return right ? x : x + 5 + tw;
+        ctx.strokeText(label, right ? x - off : x + off, yText);
+        ctx.fillStyle = col; ctx.fillText(label, right ? x - off : x + off, yText);
+        return right ? x : x + off + tw;
       }
       // Lloyd's marker. Closer than NEAR_AXIS px to the y-axis, its line would read as a second (red) y-axis, so it is
       // drawn as at epoch 0: no line or track tick of its own, the label starts at the axis and names the epoch. The
       // label is the longest wording that fits on either side of the line (on the right where it fits there).
       var NEAR_AXIS = 24, lv = X(LOCK) - X(0) < NEAR_AXIS ? 0 : LOCK;
       ctx.font = "600 " + fsm + "px " + FONT;
-      var lx = Math.round(X(lv)) + 0.5, roomR = W - 2 - (lx + 5), roomL = lx - 5 - 2;
+      // left of its line, the label stops 9 px right of the axis (clear of the arrowhead and of "training MSE")
+      var lx = Math.round(X(lv)) + 0.5, roomR = W - 2 - (lx + (lv > 0 ? 5 : 9)), roomL = lx - 5 - (X(0) + 9);
       var lockWords = lv > 0 ? ["Lloyd's final arrangement from here", "Lloyd's final arrangement", "Lloyd final from here",
                                 "Lloyd final"]
         : LOCK > 0 ? ["Lloyd's final arrangement from epoch " + LOCK, "Lloyd final from epoch " + LOCK, "Lloyd final"]
@@ -2124,10 +2126,13 @@ document.getElementById("emCopy").addEventListener("click", () => {
         var w = ctx.measureText(s).width; return w <= roomR || w <= roomL;
       })[0] || lockWords[lockWords.length - 1];
       var escY = g.PB + 16, escBox = escX + 5 + escW > W - 2 ? [escX - 8 - escW, escX - 2] : [escX + 2, escX + 8 + escW];
-      // the y-axis, in the playhead's grey (its name is the HTML label on its left)
+      // the y-axis, in the playhead's grey, ending in an arrowhead (its name is the HTML label on its left). Shaft and
+      // head are one path filled once, so the semi-transparent grey does not darken where they overlap.
       var x0 = Math.round(X(0)) + 0.5;
-      ctx.strokeStyle = "rgba(29,29,31,0.5)"; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(x0, g.PT); ctx.lineTo(x0, g.PB + 0.5); ctx.stroke();
+      ctx.fillStyle = "rgba(29,29,31,0.5)";
+      // head 9 px wide and 8 tall, its base 1 px above the zoom band's top (PT - 4)
+      ctx.beginPath(); ctx.rect(x0 - 0.75, g.AY + 7, 1.5, g.PB + 0.5 - (g.AY + 7));
+      ctx.moveTo(x0 - 4.5, g.AY + 8); ctx.lineTo(x0, g.AY); ctx.lineTo(x0 + 4.5, g.AY + 8); ctx.closePath(); ctx.fill();
       marker(lv, RED, 3, lockLabel, 12, [escBox[0], escBox[1], escY - fsm - 1, escY + 5]);
       marker(ESC, BLUE, g.PT, "e-means escapes", escY);
       // the playhead, with a dot on each curve (a small caret just inside the top edge while a curve is above it)
@@ -2136,7 +2141,7 @@ document.getElementById("emCopy").addEventListener("click", () => {
       // on the markers' pixel grid, so it covers a marker it lands on; not drawn while it lies on the y-axis
       var xp = Math.round(xt) + 0.5;
       if (xt - X(0) > 1) { ctx.beginPath(); ctx.moveTo(xp, g.PT); ctx.lineTo(xp, g.PB); ctx.stroke(); }
-      [[D.L.mse[li], RED], [D.E.mse[ei], BLUE]].forEach(function (pc) {
+      if (xt - X(0) > 1) [[D.L.mse[li], RED], [D.E.mse[ei], BLUE]].forEach(function (pc) {
         var y = Y(pc[0]);
         if (y < g.PT) {
           ctx.beginPath(); ctx.moveTo(xt - 4, g.PT + 7); ctx.lineTo(xt, g.PT + 2); ctx.lineTo(xt + 4, g.PT + 7);
