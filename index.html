@@ -802,7 +802,7 @@
 <p class="footnote" style="margin-top:-0.6em; border-top:none; padding-top:0;">1 million vectors, <span class="e">k</span>&nbsp;=&nbsp;16,384, 5 epochs, mean over 5 seeds; only the revival policy varies. A cluster counts as dead when fewer than ten vectors are assigned to it at the end, a thousandth of an average cluster. Imbalance: how uneven the cluster sizes are (1 = all equal). From the paper&rsquo;s revival ablation table.</p>
 
 <h2 id="validation">Extensive experimental validation</h2>
-<p>We validated e-means on 24 different embedding and synthetic datasets and configurations (see <a href="#" title="link added on release">paper</a>).</p>
+<p>We validated e-means on 24 different embedding and synthetic datasets and configurations (see <a href="#" title="link added on release">paper</a>). For the video we ran 234 configurations of e-means against k-means (16 datasets, 100k to 100M points): explore every curve in the <a href="results-map.html">results map</a>.</p>
 
 <figure>
   <img src="assets/paper_epochs_3arm.png" width="2568" height="1050" loading="lazy" decoding="async" alt="Convergence curves vs Lloyd at 25 iterations">
