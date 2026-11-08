@@ -826,10 +826,11 @@
 
 
 <h2>Library and code</h2>
-<div class="eq-block">from faiss.contrib.e_means import Emeans
+<div class="eq-block">from faiss.contrib.e_means import Emeans  #&nbsp;NumpyEmeans&nbsp;for&nbsp;NumPy
 
-em = Emeans(d, k, niter=T)   # T passes over the data (5 by default)
-centroids, labels = em.train(x)   # labels: each vector's cluster after the last pass</div>
+em = Emeans(d, k, nepochs=T)     #&nbsp;T&nbsp;epochs&nbsp;(5&nbsp;by&nbsp;default)
+centroids, labels = em.train(x)  #&nbsp;x:&nbsp;a&nbsp;PyTorch&nbsp;tensor&nbsp;(n,&nbsp;d)
+# labels: each vector's cluster in the last epoch</div>
 <p>Repo: <a href="https://github.com/facebookresearch/faiss/tree/main/contrib/e_means" target="_blank" rel="noopener">faiss/contrib/e_means</a>.</p>
 
 <div class="footnote">
