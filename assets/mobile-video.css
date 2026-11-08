@@ -1,1 +1,38 @@
 /* mobile pass (2026-11-08): video overrides */
+/* Every rule sits in a media query a desktop window (wider than 600 px and taller than 500 px, fine pointer)
+   does not match, so the desktop page renders exactly as before. */
+
+/* --- Phones held upright: the video runs edge to edge, so its small text is as large as the screen allows.
+   The page gutter is 12 px (videoStyle), so the video steps out of it by 12 px on each side. --- */
+@media (max-width: 600px){
+  .video-wrap{padding-top:6px; overflow-x:clip;}
+  .video-wrap .em-video{width:calc(100% + 24px); max-width:none; margin:0 -12px;
+    border:0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); border-radius:0;}
+  .video-wrap .more-info{margin-top:14px;}
+  /* Kudos: readable text, a little more air between the lines so each name is easy to hit */
+  .video-wrap .more-box .footnote{font-size:15px; line-height:1.65;}
+  .video-wrap .more-box{padding:10px 12px 12px;}
+}
+
+/* --- Phones held sideways (a short, wide screen): the whole video fits the screen height, centred, so it
+   can be watched without scrolling once it is in view. --- */
+@media (orientation: landscape) and (max-height: 500px){
+  .video-wrap{padding:8px 12px 40px;}
+  .video-wrap .em-video{width:min(100%, calc((100vh - 8px) * 16 / 9)); margin:0 auto; border-radius:6px;
+    scroll-margin-top:4px;}
+}
+@supports (height: 100svh){
+  @media (orientation: landscape) and (max-height: 500px){
+    /* the small viewport: the screen height left while the browser's toolbars are showing */
+    .video-wrap .em-video{width:min(100%, calc((100svh - 8px) * 16 / 9));}
+  }
+}
+
+/* --- Touch screens: the Kudos line is a 44 px target, and the links are underlined (there is no hover to
+   reveal them) with a padded hit area that does not change the line spacing. --- */
+@media (pointer: coarse){
+  .video-wrap .more-info summary{min-height:44px; padding:0 12px 0 0; font-size:15px;}
+  .video-wrap .more-box .footnote{font-size:15px; line-height:1.65;}
+  .video-wrap .more-box .footnote a{text-decoration:underline; text-decoration-color:rgba(31,119,180,0.35);
+    text-underline-offset:2px; padding:4px 0; -webkit-tap-highlight-color:rgba(31,119,180,0.15);}
+}

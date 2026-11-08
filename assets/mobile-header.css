@@ -1,1 +1,102 @@
-/* mobile pass (2026-11-08): header overrides */
+/* mobile pass (2026-11-08): header overrides.
+   The shared header (name, menu, Paper / Code pop-ups, e-means wordmark, partner logos) on all four
+   pages. Every rule that changes the look sits inside a media query a desktop window wider than
+   1180 px with a mouse does not match, so the desktop rendering is unchanged. */
+
+/* iOS Safari enlarges text on its own when a phone is turned sideways: keep the sizes we set */
+html{-webkit-text-size-adjust:100%; text-size-adjust:100%;}
+
+/* the zoom dialog's swipe strip (added by mobile-header.js) is invisible except on upright phones */
+.em-zoom .em-zoom-pan{display:contents;}
+.em-zoom .em-zoom-hint{display:none;}
+html.em-zoom-lock, html.em-zoom-lock body{overflow:hidden;}
+
+/* --- Below 940 px the Paper pop-up (680 px wide, anchored at its link) ran off the right edge of the
+   blog post. Open both pop-ups under the header, inside the screen, and let the citation wrap. The
+   other three pages already did this; the rule is repeated here so all four behave the same. --- */
+@media (max-width:940px){
+  .em-header .em-header-inner{position:relative;}
+  .em-header .em-paper{position:static;}
+  .em-header .em-paper-pop{left:16px; right:16px; width:auto; max-width:680px; top:calc(100% - 4px);
+    margin-top:0; box-sizing:border-box;}
+  .em-header .em-code-pop{left:auto;}
+  .em-header .em-cite{white-space:pre-wrap;}
+}
+@media (max-width:600px){
+  .em-header .em-paper-pop, .em-header .em-nav .em-code-pop{left:8px; right:8px;}
+}
+
+/* --- Narrow windows and touch screens: tap targets of at least 44 px. The links keep their look;
+   an invisible margin around each one takes the finger. --- */
+@media (max-width:1179px), (pointer:coarse){
+  .em-header .em-name, .em-header .em-nav a, .em-header .em-paper summary{position:relative;}
+  .em-header .em-name::after, .em-header .em-nav > a::after, .em-header .em-paper > summary::after{
+    content:""; position:absolute; left:-6px; right:-6px; top:-11px; bottom:-11px;}
+  .em-header .em-copy{min-height:44px; padding:0 16px; font-size:14px;}
+  .em-header .em-nav .em-code-pop a.em-code-link{display:inline-block; padding:12px 0;}
+  .em-header .em-paper summary{-webkit-tap-highlight-color:transparent;}
+  /* a menu item never breaks inside itself ("Blog / post" on two lines); the menu wraps instead */
+  .em-header .em-nav{flex-wrap:wrap;}
+  .em-header .em-nav > a, .em-header .em-paper > summary{white-space:nowrap;}
+}
+
+/* --- Phones held sideways: the one-row header gave the name and menu only a third of the width, so
+   the menu broke inside "Blog post". The menu column now takes what it needs, the wordmark is centred
+   in what is left. --- */
+@media (orientation:landscape) and (max-height:500px) and (min-width:601px) and (max-width:1139px) and (pointer:coarse){
+  .em-header .em-header-inner{grid-template-columns:auto minmax(130px, 1fr) auto; padding:6px 24px; gap:6px 20px;}
+  .em-header .em-mark{grid-column:auto; grid-row:auto; justify-self:center; width:100%; max-width:195px;}
+  .em-header .em-mark img{width:100%; height:auto;}
+  /* the blog switched to this one-row header only from 700 px; small phones (667 px) got a header
+     that filled more than half the screen */
+  .em-header .em-left{justify-self:start; gap:0 20px;}
+  .em-header .em-nav{gap:4px 16px;}
+  .em-header .em-logos{justify-self:end; gap:14px;}
+  .em-header .em-logos > span + span{padding-left:14px;}
+  .em-header .em-logos .logo-fair{height:12px;}
+  .em-header .em-logos .logo-enpc{height:34px;}
+}
+/* the smallest phones sideways (667 px): a little tighter, so the menu stays on one line */
+@media (orientation:landscape) and (max-height:500px) and (min-width:601px) and (max-width:719px) and (pointer:coarse){
+  .em-header .em-header-inner{padding:6px 16px; gap:6px 14px;}
+  .em-header .em-nav{gap:4px 12px;}
+  .em-header .em-logos{gap:10px;}
+  .em-header .em-logos > span + span{padding-left:10px;}
+  .em-header .em-logos .logo-fair{height:11px;}
+  .em-header .em-logos .logo-enpc{height:30px;}
+}
+
+/* --- Upright phones: the menu may need two lines. On the blog it was one unbreakable line that pushed
+   the page 18 px wider than a 320 px screen and cut off the right end of the wordmark. --- */
+@media (max-width:600px){
+  .em-header .em-nav{flex-wrap:wrap; row-gap:6px;}
+  .em-header .em-left{min-width:0; max-width:100%;}
+  .em-header .em-mark{max-width:100%;}
+}
+/* the five items do not fit on one line below 360 px: break them three and two rather than leaving
+   "Code" alone on the second line */
+@media (max-width:359px){
+  .em-header .em-nav{max-width:236px; row-gap:14px;}
+  .em-header .em-left{justify-content:center;}
+  /* the blog centres its header, so its two menu lines are centred too */
+  .em-header .em-nav:has(> a.active[href="./"]){justify-content:center;}
+}
+
+/* --- Touch screens have no hover: drop the "Click to zoom" label that would stick after a tap --- */
+@media (hover:none){
+  .em-header .em-mark::after{content:none;}
+}
+
+/* --- The zoomed wordmark on an upright phone. It is 5.4 times wider than tall, so fitting it to the
+   screen width made it SMALLER than in the header (301 px against 340 px at 320 px). Show it large
+   instead, in a strip that pans sideways with a swipe, starting at the middle. --- */
+@media (max-width:600px) and (orientation:portrait){
+  .em-zoom.open{padding:24px 0; gap:12px;}
+  .em-zoom .em-zoom-pan{display:block; width:100%; overflow-x:auto; overflow-y:hidden;
+    overscroll-behavior:contain; -webkit-overflow-scrolling:touch; scrollbar-width:thin;}
+  .em-zoom .em-zoom-pan img{display:block; max-width:none; max-height:none;
+    height:min(170px, 32vh); width:auto; margin:0 auto;}
+  .em-zoom figcaption{padding:0 16px; text-align:center; font-size:15px;}
+  .em-zoom .em-zoom-hint{display:block; padding:0 16px; text-align:center;
+    font:13px/1.4 "IBM Plex Sans",-apple-system,sans-serif; color:#616b74;}
+}

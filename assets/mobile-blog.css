@@ -1,1 +1,109 @@
 /* mobile pass (2026-11-08): blog overrides */
+/* Phone and tablet fixes for the blog post body (index.html, everything below the site header).
+   Every rule sits inside a width or touch media query, so the desktop page (1140 px and wider, mouse) is unchanged.
+   The figure viewer (.mb-lb) and the toast only exist once mobile-blog.js creates them on a narrow or touch screen. */
+
+/* ---------- anchors: a link to a reference or a section lands with a little air above it ---------- */
+@media (max-width:1139px), (pointer:coarse){
+  .wrap h2[id], .wrap h3[id], .refs li[id], figure[id], details.aside[id]{scroll-margin-top:14px;}
+  /* the reference you jumped to is highlighted, so you can find it in the list */
+  .refs li:target{background:#f3f7fb; outline:6px solid #f3f7fb; border-radius:2px;}
+
+  /* citation numbers and the back arrows in the reference list: a fingertip-sized hit area, same look */
+  sup.cite a{display:inline-block; padding:6px 3px; margin:-6px -3px; position:relative;}
+  .refs li > a[href^="#cite"]{display:inline-block; padding:8px 10px; margin:-8px -6px;}
+
+  /* the links under the intro ([Paper] [Code] [Cite] [Coauthors]): a taller hit area, same line layout */
+  p.dek-links a, p.dek-links .dek-toggle{display:inline-block; padding:8px 2px; margin:-8px 0;}
+
+  /* play buttons: at least 44 px on every touch-sized screen (the page only did this below 720 px) */
+  .play-btn{width:44px; height:44px;}
+
+  /* the two plain sliders (hero, dead clusters): a 44 px tall touch strip around the same thin track */
+  #anim2d .slider-col input[type=range], #deadClusters .slider-col input[type=range]{height:44px; margin:-8px 0 -10px;
+    touch-action:pan-y;}
+
+  /* component cards: the small diagram labels ("old centroid", "below threshold") were cut at the drawing edge */
+  .components-grid .comp-card svg{overflow:visible;}
+
+  /* the library snippet and the BibTeX entry keep their line breaks and scroll sideways in their own box,
+     with a soft shadow on the edge that has more */
+  .eq-block, .citebox{
+    white-space:pre !important; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    background:
+      linear-gradient(to right, #f4f4f6 30%, rgba(244,244,246,0)) left center / 28px 100% no-repeat local,
+      linear-gradient(to left, #f4f4f6 30%, rgba(244,244,246,0)) right center / 28px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgba(0,0,0,0.16), rgba(0,0,0,0)) left center / 10px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.16), rgba(0,0,0,0)) right center / 10px 100% no-repeat scroll,
+      #f4f4f6;
+  }
+  .eq-display, .coef-scroll{-webkit-overflow-scrolling:touch;}
+
+  /* the "swipe for more" line the script adds under a box that is wider than the screen */
+  .mb-swipe{font-size:12.5px; color:var(--ink-2); margin:-0.6em 0 1em; text-align:right;}
+  .mb-swipe[hidden]{display:none;}
+
+  /* figures that open full screen: a small badge on the image says so */
+  figure.mb-zoomable > img{cursor:zoom-in; -webkit-tap-highlight-color:transparent;}
+  figure.mb-zoomable > .mb-zoom-badge{display:flex; align-items:center; justify-content:flex-end; gap:6px;
+    margin:0 0 0 auto; width:max-content; padding:8px 2px 4px 10px; min-height:32px; cursor:pointer;
+    font:500 13px/1.2 "IBM Plex Sans",-apple-system,sans-serif; color:var(--emablue);
+    -webkit-tap-highlight-color:transparent;}
+  figure.mb-zoomable > .mb-zoom-badge + figcaption{margin-top:2px;}
+  figure.mb-zoomable > .mb-zoom-badge svg{display:block;}
+}
+
+/* ---------- tablet held upright (721 to 1023 px): the hero plots two across with the loss chart underneath,
+   as on a phone held upright, instead of three thumbnails in one row ---------- */
+@media (min-width:721px) and (max-width:1023px) and (orientation:portrait){
+  #anim2d .anim-row{display:grid; grid-template-columns:1fr 1fr; gap:16px 24px; overflow:visible;}
+  #anim2d .anim-row > div{min-width:0;}
+  #anim2d .anim-row > div:last-child{grid-column:1 / -1; justify-self:center; width:100%; max-width:340px;}
+  #anim2d .panel-title{min-height:2.6em;}
+  #anim2d .anim-row > div:last-child .panel-title{min-height:0;}
+  #anim2d .anim-row canvas{display:block; margin:0 auto;}
+}
+
+/* ---------- phones ---------- */
+@media (max-width:600px){
+  /* the coefficient table keeps its first column (the law's name) in view while the numbers scroll */
+  .coef-scroll > table.coef:not(.revival) tbody td:first-child,
+  .coef-scroll > table.coef:not(.revival) thead tr:first-child th:first-child{
+    position:sticky; left:0; z-index:1; box-shadow:inset -1px 0 0 var(--rule);}
+  .coef-scroll > table.coef:not(.revival) tbody td:first-child{background:#fff;}
+  .coef-scroll > table.coef:not(.revival) thead tr:first-child th:first-child{background:#f4f4f6;}
+  .eq-block, .citebox{font-size:13px; line-height:1.5; padding:12px 14px;}
+  /* figure captions and footnotes a touch larger, they carry the numbers */
+  .wrap figcaption{font-size:15px; line-height:1.5;}
+}
+@media (max-width:480px){
+  /* the title in four lines rather than five or six */
+  header.hero h1.title{font-size:1.75em; line-height:1.18;}
+  p.dek{font-size:1.1em;}
+}
+
+/* ---------- full-screen figure viewer (created by mobile-blog.js) ---------- */
+.mb-lb{position:fixed; inset:0; z-index:2000; display:none; flex-direction:column; background:#fbfbfa;
+  font-family:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;}
+.mb-lb.open{display:flex;}
+.mb-lb-bar{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:6px 8px 6px 14px;
+  border-bottom:1px solid #e5e5e8; background:#fff;}
+.mb-lb-hint{flex:1 1 auto; font-size:13px; color:#55555a; line-height:1.3;}
+.mb-lb-btn{flex:0 0 auto; width:44px; height:44px; border-radius:50%; border:1px solid #e5e5e8; background:#fff;
+  color:#111; font-size:22px; line-height:1; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  padding:0;}
+.mb-lb-scroll{flex:1 1 auto; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y;
+  overscroll-behavior:contain; display:flex;}
+.mb-lb-scroll img{display:block; margin:auto; background:#fff; max-width:none; height:auto; flex:0 0 auto;
+  border:0; border-radius:0; cursor:zoom-in; -webkit-user-select:none; user-select:none;}
+.mb-lb.zoomed .mb-lb-scroll img{cursor:zoom-out;}
+.mb-lb-cap{flex:0 1 auto; max-height:28vh; overflow:auto; padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  font-size:14px; line-height:1.45; color:#55555a; border-top:1px solid #e5e5e8; background:#fff;}
+.mb-lb-cap:empty{display:none;}
+@media (orientation:landscape) and (max-height:500px){ .mb-lb-cap{max-height:22vh; font-size:13px;} }
+
+/* ---------- toast for links that have no target yet ("paper", added on release) ---------- */
+.mb-toast{position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom)); transform:translateX(-50%);
+  z-index:2100; width:max-content; max-width:calc(100vw - 32px); box-sizing:border-box; background:rgba(27,31,35,0.92); color:#fff; font-size:14px;
+  line-height:1.4; padding:10px 14px; border-radius:8px; opacity:0; transition:opacity 0.2s; pointer-events:none;}
+.mb-toast.show{opacity:1;}

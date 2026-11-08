@@ -1,1 +1,47 @@
 /* mobile pass (2026-11-08): playground overrides */
+/* Every rule sits inside a query a desktop window (fine pointer, wider than 600 px) does not match,
+   so the desktop look is unchanged. */
+
+/* --- Finger-sized targets for the last few controls the page leaves small: the two folding lines
+   ("additional info", "Kudos") and the three key entries under the plots, whose tap shows a gloss.
+   Width-based as well as pointer-based, so a phone browser that reports a fine pointer
+   (or "request desktop site") still gets them. --- */
+@media (pointer: coarse), (max-width: 600px){
+  .more-info summary{min-height:44px; padding:0;}
+  .more-info + .more-info{margin-top:0;}
+  /* an invisible margin around each key entry takes the finger; the look does not change */
+  .panel-key [data-tip]::before{content:""; position:absolute; left:-4px; right:-4px; top:-12px; bottom:-12px;}
+  /* a tap on a key entry must not flash the grey iOS highlight over the plots */
+  .panel-key [data-tip], .more-info summary, #startBtn, .checkopt{-webkit-tap-highlight-color:transparent;}
+  /* double-tap zoom off on the controls, so two quick taps on Train or a slider do not zoom the page
+     (pinch-zoom stays available) */
+  .wide button, .wide input, .wide select, .wide label, .wide summary, .panel-key{touch-action:manipulation;}
+}
+
+/* --- Narrow windows get the touch sizes the page gives touch screens, whatever pointer the browser reports --- */
+@media (max-width: 600px){
+  select, input[type=number]{font-size:16px; min-height:44px;}
+  #startBtn{min-height:44px;}
+  fieldset input[type=range]{height:44px;}
+  .checkopt{min-height:44px; gap:10px;}
+  .checkopt input{width:20px; height:20px;}
+  .slider-col input[type=range]{height:44px;}
+}
+
+/* --- Phones held sideways: "Play speed" stretched across the whole line, with its divider hanging on the
+   left. It keeps the width of the other sliders and sits after them like on a computer. --- */
+@media (orientation: landscape) and (min-width: 601px) and (max-height: 500px) and (pointer: coarse){
+  .row > label.speedslider{flex:0 1 auto;}
+  .speedslider #playSpeed{flex:0 0 90px; width:90px;}
+  /* it can start a line there, so no divider on its left */
+  .row > label.speedslider{padding-left:0; border-left:0;}
+}
+
+/* the copy of a refused-setting error, right under the Train button (see mobile-playground.js); shown on the
+   layouts where the status line is far below the button, hidden everywhere else */
+.mpg-err{display:none;}
+@media (max-width: 600px), (orientation: landscape) and (min-width: 601px) and (max-height: 500px) and (pointer: coarse){
+  .mpg-err:not(:empty){display:block; margin:6px 0 2px; padding:8px 10px; border:1px solid rgba(214,39,40,0.35);
+    border-radius:6px; background:#fff5f5; color:var(--emared); font-size:0.88em; font-weight:600;
+    line-height:1.4; white-space:pre-wrap;}
+}
