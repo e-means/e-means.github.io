@@ -408,7 +408,6 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
 <span style="color:#666">pinch or ctrl + scroll to zoom &middot; scroll or drag to pan &middot; double-click to zoom in &middot; hover a point to read it</span>
 </div>
 <svg id="rmView" xmlns="http://www.w3.org/2000/svg"><g id="rmWorld"></g></svg>
-<div class="rm-foot">Data: results campaign 071126 (e-means as released, master recipe; k-means = faiss Lloyd, same random start per seed; DINO at 100M uses an exact streamed Lloyd). Speedup = 25 / the epoch where the mean e-means curve reaches the mean k-means@25 level, linearly interpolated between budgets.</div>
 </div>
 <div id="rmTip"></div>
 <script>
@@ -557,6 +556,19 @@ const sel = document.getElementById("rmDs");
 sel.onchange = () => groups.forEach(g => g.style.opacity = !sel.value || g.dataset.ds === sel.value ? 1 : 0.12);
 window.addEventListener("resize", fit);
 fit();
+</script>
+<figure class="em-zoom" id="emZoom" role="dialog" aria-label="e-means logo, enlarged">
+  <img src="assets/emeans-wordmark.png?v=silk320" alt="e-means, clustered by e-means">
+  <figcaption>e-means, clustered by e-means: Visualization of the Voronoi cells</figcaption>
+</figure>
+<script>
+(function () {
+  var mark = document.querySelector(".em-mark"), zoom = document.getElementById("emZoom");
+  if (!mark || !zoom) return;
+  mark.addEventListener("click", function (e) { e.preventDefault(); zoom.classList.add("open"); });
+  zoom.addEventListener("click", function () { zoom.classList.remove("open"); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") zoom.classList.remove("open"); });
+})();
 </script>
 </body>
 </html>
