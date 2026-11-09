@@ -32,8 +32,12 @@
   .em-paper-arxiv{font-size:13px; color:#616b74; margin-bottom:10px;}
   .em-cite{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-size:12px;
     background:#f6f6f7; border:1px solid #e2e4e8; border-radius:6px; padding:10px 12px; margin:0 0 10px;
-    white-space:pre; overflow-x:auto; color:#1b1f23;}
+    white-space:pre-wrap; overflow-x:auto; color:#1b1f23;}
   .em-copy{font-size:12px; padding:5px 12px;}
+  .em-nav .em-paper-pop a.em-arxiv-link{color:#1f77b4; text-decoration:underline; text-underline-offset:2px; border-bottom:0;}
+  .em-arxiv-btn{margin-left:8px;}
+  .em-paper-pop .em-copy{font-family:inherit;}
+  @media (max-width:420px){.em-paper-pop .em-cite{font-size:11px;}}
   .em-copy{font-family:inherit; border-radius:6px; border:1px solid #1f77b4; background:#fff; color:#1f77b4; cursor:pointer;}
   .em-copy:hover{opacity:0.9;}
   .em-mark{justify-self:center; display:block; line-height:0; background:#fff;
@@ -164,6 +168,9 @@
     padding:14px 18px; font-family:"SF Mono","Menlo","Consolas",monospace;
     font-size:0.86em; overflow-x:auto; white-space:pre-wrap;
   }
+  /* the BibTeX wraps on every screen; the phone stylesheet would make it scroll sideways */
+  .footnote .citebox{white-space:pre-wrap !important;}
+  @media (max-width:420px){.footnote .citebox{font-size:11px;}}
   .footnote{font-size:0.88em; color:var(--ink-2); margin-top:3em; border-top:1px solid var(--rule); padding-top:1.4em;}
   .refs{font-size:0.9em; color:var(--ink-2); padding-left:1.4em;}
   .refs li{margin-bottom:0.6em;}
@@ -430,15 +437,17 @@
         <details class="em-paper">
           <summary>Paper</summary>
           <div class="em-paper-pop">
-            <div class="em-paper-arxiv">arXiv: link added on release (the paper is under review)</div>
-            <pre class="em-cite" id="emCite">@misc{emeans2026,
-  title  = {E-means: outperforming k-means (in one-tenth the epochs)},
-  author = {Bessa, Swann and Mazar&eacute;, Pierre-Emmanuel and Szilvasy, Gergely
-            and Touvron, Hugo and Picard, David and Douze, Matthijs
-            and J&eacute;gou, Herv&eacute;},
-  year   = {2026}
+            <div class="em-paper-arxiv">On arXiv: <a class="em-arxiv-link" href="https://arxiv.org/abs/2611.09501" target="_blank" rel="noopener">arxiv.org/abs/2611.09501</a></div>
+            <pre class="em-cite" id="emCite">@misc{bessa2026emeansoutperformingkmeansin,
+      title={e-means: outperforming k-means (in one-tenth the epochs)}, 
+      author={Swann Bessa and Pierre-Emmanuel Mazar&eacute; and Gergely Szilvasy and Hugo Touvron and David Picard and Matthijs Douze and Herv&eacute; J&eacute;gou},
+      year={2026},
+      eprint={2611.09501},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2611.09501}, 
 }</pre>
-            <button type="button" class="secondary em-copy" id="emCopy">Copy citation</button>
+            <button type="button" class="secondary em-copy" id="emCopy">Copy citation</button><button type="button" class="secondary em-copy em-arxiv-btn" onclick="window.open('https://arxiv.org/abs/2611.09501', '_blank', 'noopener')">Open on arXiv</button>
           </div>
         </details>
         <details class="em-paper em-code">
@@ -462,7 +471,7 @@
     <h1 class="title">e-means: outperforming k-means in one-tenth the epochs</h1>
     <p class="dek">I&rsquo;m excited to open-source e-means: a modern, robust k-means algorithm developed at Meta FAIR. A replacement of Lloyd's algorithm, e-means delivers a ~10&times; speedup in both epochs and wall-clock time while achieving lower loss.</p>
     <p class="dek"><strong><a href="playground.html">Try e-means in your browser</a></strong></p>
-    <p class="dek-links"><a href="#">[Paper, arXiv coming soon]</a> &middot; <a href="https://github.com/facebookresearch/faiss/tree/main/contrib/e_means" target="_blank" rel="noopener">[Code]</a> &middot; <a href="#citing-this-work">[Cite]</a> &middot; <button type="button" class="dek-toggle" aria-expanded="false" aria-controls="dekCoauthors">[Coauthors]</button></p>
+    <p class="dek-links"><a href="https://arxiv.org/abs/2611.09501" target="_blank" rel="noopener">[Paper]</a> &middot; <a href="https://github.com/facebookresearch/faiss/tree/main/contrib/e_means" target="_blank" rel="noopener">[Code]</a> &middot; <a href="#citing-this-work">[Cite]</a> &middot; <button type="button" class="dek-toggle" aria-expanded="false" aria-controls="dekCoauthors">[Coauthors]</button></p>
     <p class="dek-coauthors" id="dekCoauthors" hidden>Pierre-Emmanuel Mazar&eacute;, Gergely Szilvasy, Hugo Touvron, David Picard, Matthijs Douze and Herv&eacute; J&eacute;gou</p>
     <script>
     (function () {
@@ -803,10 +812,10 @@
     <tr><td class="pol">off</td><td>2,080</td><td>12.7%</td><td>1.404</td><td>0.19797</td></tr>
   </tbody>
 </table></div>
-<p class="footnote" style="margin-top:-0.6em; border-top:none; padding-top:0;">1 million vectors, <span class="e">k</span>&nbsp;=&nbsp;16,384, 5 epochs, mean over 5 seeds; only the revival policy varies. A cluster counts as dead when fewer than ten vectors are assigned to it at the end, a thousandth of an average cluster. Imbalance: how uneven the cluster sizes are (1 = all equal). From the paper&rsquo;s revival ablation table.</p>
+<p class="footnote" style="margin-top:-0.6em; border-top:none; padding-top:0;">1 million vectors, <span class="e">k</span>&nbsp;=&nbsp;16,384, 5 epochs, mean over 5 seeds; only the revival policy varies. A cluster counts as dead when fewer than ten vectors are assigned to it at the end, a thousandth of an average cluster. Imbalance: how uneven the cluster sizes are (1 = all equal). From the <a href="https://arxiv.org/abs/2611.09501" target="_blank" rel="noopener">paper</a>&rsquo;s revival ablation table.</p>
 
 <h2 id="validation">Extensive experimental validation</h2>
-<p>We validated e-means on 24 different embedding and synthetic datasets and configurations (see <a href="#" title="link added on release">paper</a>). For the video we ran 234 configurations of e-means against k-means (16 datasets, 100k to 100M points): explore every curve in the <a href="results-map.html">results map</a>.</p>
+<p>We validated e-means on 24 different embedding and synthetic datasets and configurations (see <a href="https://arxiv.org/abs/2611.09501" target="_blank" rel="noopener">paper</a>). For the video we ran 234 configurations of e-means against k-means (16 datasets, 100k to 100M points): explore every curve in the <a href="results-map.html">results map</a>.</p>
 
 <figure>
   <img src="assets/paper_epochs_3arm.png" width="2568" height="1050" loading="lazy" decoding="async" alt="Convergence curves vs Lloyd at 25 iterations">
@@ -835,13 +844,15 @@ centroids, labels = em.train(x)  #&nbsp;x:&nbsp;a&nbsp;PyTorch&nbsp;tensor&nbsp;
 
 <div class="footnote">
 <h3 id="citing-this-work" style="margin-top:0">Citing this work</h3>
-<p>The paper is currently under anonymous review; the arXiv ID and final venue will be added here on release. Until then, please reach out to the team (Swann Bessa, Pierre-Emmanuel Mazar&eacute;, Gergely Szilvasy, Hugo Touvron, David Picard, Matthijs Douze, Herv&eacute; J&eacute;gou) before citing or redistributing specific numbers from this post.</p>
-<div class="citebox">@misc{emeans2026,
-  title  = {E-means: outperforming k-means (in one-tenth the epochs)},
-  author = {Bessa, Swann and Mazar&eacute;, Pierre-Emmanuel and Szilvasy, Gergely
-            and Touvron, Hugo and Picard, David and Douze, Matthijs
-            and J&eacute;gou, Herv&eacute;},
-  year   = {2026}
+<p>If you use e-means, please cite the paper (<a href="https://arxiv.org/abs/2611.09501" target="_blank" rel="noopener">arXiv:2611.09501</a>):</p>
+<div class="citebox">@misc{bessa2026emeansoutperformingkmeansin,
+      title={e-means: outperforming k-means (in one-tenth the epochs)}, 
+      author={Swann Bessa and Pierre-Emmanuel Mazar&eacute; and Gergely Szilvasy and Hugo Touvron and David Picard and Matthijs Douze and Herv&eacute; J&eacute;gou},
+      year={2026},
+      eprint={2611.09501},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2611.09501}, 
 }</div>
 </div>
 
