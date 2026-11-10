@@ -18,6 +18,9 @@ html{scrollbar-gutter:stable; -webkit-text-size-adjust:100%; text-size-adjust:10
 .em-name{font-family:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif; font-weight:600; font-size:17px;
   color:#1b1f23; text-decoration:none;}
 .em-nav{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-size:13px; display:flex; gap:20px;}
+  /* menu items never break inside; if the menu is wider than its column, its last items move to a second row */
+  .em-nav{flex-wrap:wrap; row-gap:6px;}
+  .em-nav > a, .em-nav > details > summary{white-space:nowrap;}
 .em-nav a{color:#616b74; text-decoration:none; padding-bottom:2px; border-bottom:1px solid transparent;}
 .em-nav a:hover, .em-nav a.active{color:#1b1f23; border-bottom-color:#1d3557;}
 .em-paper{position:relative; display:inline-block;}
@@ -378,6 +381,7 @@ code{font-family:"SF Mono","Menlo","Consolas",monospace; background:#f4f4f6;
             e-means is available in faiss : <a class="em-code-link" href="https://github.com/facebookresearch/faiss/tree/main/contrib/e_means" target="_blank" rel="noopener">faiss/contrib/e_means</a>
           </div>
         </details>
+        <a href="https://x.com/swann_bessa/status/2120200714630594911" target="_blank" rel="noopener">Release</a>
       </nav>
     </div>
     <a class="em-mark" href="assets/emeans-wordmark.png?v=silk320" aria-label="Zoom into the e-means logo"><img src="assets/emeans-wordmark.png?v=silk320" alt="e-means"></a>
