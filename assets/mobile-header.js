@@ -1,3 +1,4 @@
+/*! mobile-header.js: MIT License, Copyright (c) Meta Platforms, Inc. and affiliates. See https://github.com/e-means/e-means.github.io/blob/main/LICENSE */
 /* mobile pass (2026-11-08): header behaviour shared by all four pages.
    - the Paper and Code pop-ups close on a tap outside them, on Escape, and never stay open together
      (the results map had none of this, so its pop-ups could not be closed except by their own link)

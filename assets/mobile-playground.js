@@ -1,3 +1,4 @@
+/*! mobile-playground.js: MIT License, Copyright (c) Meta Platforms, Inc. and affiliates. See https://github.com/e-means/e-means.github.io/blob/main/LICENSE */
 /* mobile pass (2026-11-08): playground overrides */
 /* The key under the two cluster plots shows a one-phrase gloss on hover or focus. With a finger there is no
    hover, and on iOS a tapped entry keeps its focus and its sticky hover, so the gloss could not be put away

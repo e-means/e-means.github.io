@@ -1,3 +1,4 @@
+/*! mobile-blog.js: MIT License, Copyright (c) Meta Platforms, Inc. and affiliates. See https://github.com/e-means/e-means.github.io/blob/main/LICENSE */
 /* mobile pass (2026-11-08): blog overrides */
 /* Behaviour fixes for the blog post body on phones and tablets. Nothing here runs on a wide screen with a mouse:
    every feature checks MOBILE() at the moment it acts, so the desktop page is untouched.

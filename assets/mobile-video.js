@@ -1,3 +1,4 @@
+/*! mobile-video.js: MIT License, Copyright (c) Meta Platforms, Inc. and affiliates. See https://github.com/e-means/e-means.github.io/blob/main/LICENSE */
 /* mobile pass (2026-11-08): video overrides */
 (function () {
   var video = document.querySelector(".em-video");
